@@ -1,3 +1,0 @@
-FROM mysql/mysql-server:latest
-COPY ./danarbu.sql /tmp/danarbu.sql
-
