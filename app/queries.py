@@ -4,10 +4,10 @@ import os
 
 class QueryWrapper:
     def __init__(self):
-        username = "root"  # os.getenv("DANARBU_DBUSERN")
-        password = ""  # os.getenv("DANARBU_DBPASSWORD")
-        schema = "db_danarbu"  # os.getenv("DANARBU_DBSCHEMA")
-        hostname = "docker.for.mac.localhost"  # os.getenv("DANARBU_DBHOST")
+        username = os.getenv("DANARBU_DBUSERN")
+        password = os.getenv("DANARBU_DBPASSWORD")
+        schema = os.getenv("DANARBU_DBSCHEMA")
+        hostname = os.getenv("DANARBU_DBHOST")
         self.db_connection = MySQLdb.connect(
             user=username, passwd=password, db=schema, host=hostname
         )
