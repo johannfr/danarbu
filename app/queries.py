@@ -22,11 +22,11 @@ def simple_search(search_string):
     cursor.execute(
         """
         SELECT nafn, stada, kyn, aldur, faeding, andlat, sysla_heiti, sokn_heiti, baer_heiti,
-            MATCH (nafn,stada,athugasemdir, baer_heiti, sysla_heiti, sokn_heiti)
+            MATCH (nafn,stada,athugasemdir, baer_heiti, sysla_heiti, sokn_heiti, faeding, andlat)
             AGAINST (%s IN BOOLEAN MODE) as score
         FROM tbl_danarbu
         WHERE
-            MATCH (nafn,stada,athugasemdir, baer_heiti, sysla_heiti, sokn_heiti)
+            MATCH (nafn,stada,athugasemdir, baer_heiti, sysla_heiti, sokn_heiti, faeding, andlat)
             AGAINST (%s IN BOOLEAN MODE)
         ORDER BY score DESC;
     """,
