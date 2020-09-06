@@ -4,7 +4,7 @@ import os
 
 class QueryWrapper:
     def __init__(self):
-        username = os.getenv("DANARBU_DBUSERN")
+        username = os.getenv("DANARBU_DBUSER")
         password = os.getenv("DANARBU_DBPASSWORD")
         schema = os.getenv("DANARBU_DBSCHEMA")
         hostname = os.getenv("DANARBU_DBHOST")

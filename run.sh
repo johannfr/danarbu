@@ -14,7 +14,11 @@ docker build -t ${app}:latest -f docker/Dockerfile .
 #     -e FLASK_APP=main.py \
 #     -e FLASK_DEBUG=1 ${app} bash -c "while true ; do sleep 10 ; done"
 
-docker run -d -p 56733:80 \
+docker run -d -p 80:80 \
     --name=${app} \
     -e FLASK_APP=main.py \
+    -e DANARBU_DBUSER="" \
+    -e DANARBU_DBPASSWORD="" \
+    -e DANARBU_DBSCHEMA="" \
+    -e DANARBU_DBHOST="" \
     -v ${PWD}:/app ${app}
