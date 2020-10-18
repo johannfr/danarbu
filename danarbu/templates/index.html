@@ -1,0 +1,52 @@
+{% extends "bootstrap/base.html" %}
+{% block html_attribs %} lang="is"{% endblock %}
+{% block styles %}
+{{super()}}
+    <style type="text/css">
+    body {
+        padding-top: 7em;
+    };
+    </style>
+{% endblock %}
+{% block title %}Dánarbú - 18. og 19. öld{% endblock %}
+
+{% block navbar %}
+<nav class="navbar fixed-top navbar-dark bg-dark" role="navigation">
+    <a class="navbar-brand" href="/">Dánarbú - 18. og 19. öld</a>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+       <form action="/" method="POST" id="leitarform">
+        {{search_form.hidden_tag()}}
+        <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <span class="input-group-text" id="basic-addon1">{{ search_form.search_string.label.text}}:</span>
+        </div>
+        {{search_form.search_string(placeholder="Sláðu inn leitarstreng", class="form-control")}}
+            <div class="input-group-append">
+                <button class="btn btn-primary" type="submit">
+                    <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-search" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+  <path fill-rule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z"/>
+  <path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z"/>
+</svg>
+                </button>
+            </div>
+        </div>
+  <a class="btn btn-secondary" data-toggle="collapse" href="#itarleit" role="button" aria-expanded="false" aria-controls="itarleit">Ítarleg leit</a>
+<div class="collapse {{show_advanced_search}}" id="itarleit">
+
+      <div class="card card-body">
+        Hér kemur ítarleg leit
+      </div>
+    </div>
+        </form>
+
+{% block search_results %}
+{% endblock %}
+
+</div>
+
+
+{% endblock %}
