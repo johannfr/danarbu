@@ -13,8 +13,5 @@ docker run -d -p 80:80 \
     --name=${app} \
     --network="host" \
     -e FLASK_APP=main.py \
-    -e DANARBU_DBUSER="" \
-    -e DANARBU_DBPASSWORD="" \
-    -e DANARBU_DBSCHEMA="" \
-    -e DANARBU_DBHOST="" \
+    -e DANARBU_DBURI="" \
     -v ${PWD}:/app ${app}
