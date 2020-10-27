@@ -50,3 +50,25 @@ def root():
 @app.route("/itarleit")
 def itarleit():
     return "Það er engin ítarleit ennþá."
+
+
+@app.route("/myndir")
+def myndir():
+    danarbu_id = request.args.get("id", type=int, default=1)
+    myndir = []
+    for heimild in (
+        models.Heimildir.query.filter(models.Heimildir.danarbu == danarbu_id)
+        .order_by(models.Heimildir.id)
+        .all()
+    ):
+        print(heimild.id)
+        for mynd in (
+            models.Myndir.query.filter(models.Myndir.heimild == heimild.id)
+            .order_by(models.Myndir.id)
+            .all()
+        ):
+            myndir.append({"tegund": heimild.tegund, "slod": mynd.slod})
+    if len(myndir) == 0:
+        return "Engar myndir tilheyra þessari færslu."
+    else:
+        return render_template("myndir.html", myndir=myndir)

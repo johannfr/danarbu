@@ -19,7 +19,7 @@
                 <div class="col"><b>Sýsla:</b> {{danarbu.sysla_heiti or "Óskráð"}}</div>
             </div>
         </div>
-        <div id="collapse{{danarbu.id}}" class="collapse" aria-labelledby="heading{{danarbu.id}}" data-parent="#accordionExample">
+        <div id="collapse{{danarbu.id}}" db-id="{{danarbu.id}}" class="collapse resultContainer" aria-labelledby="heading{{danarbu.id}}" data-parent="#accordionExample">
             <div class="card-body">
                 <div class="row detailsRow">
                     <div class="col"><b>Kyn:</b> {{danarbu.kyn.name}}</div>
@@ -104,6 +104,12 @@
                     <div class="col"><b>Athugasemdir:</b><p>{{danarbu.athugasemdir}}</p></div>
                 </div>
                 <div class="row detailsRow">
+                    <div class="col"><b>Myndir:</b>
+                        <div class="myndirContainer" id="lightgallery{{danarbu.id}}">
+                        </div>
+                    </div>
+                </div>
+                <div class="row detailsRow">
                     <div class="col"><b>Heimildir:</b>
                             <div class="row pl-2">
                                 <div class="col"><b>Skrifað</b></div>
@@ -130,7 +136,6 @@
 
 <div class="danarbuSpacer">
 </div>
-
 
 {{pagination.links}}
 
