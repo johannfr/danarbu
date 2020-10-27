@@ -5,7 +5,20 @@
     <style type="text/css">
     body {
         padding-top: 7em;
-    };
+    }
+
+    .danarbuSpacer {
+        margin-top: 1em;
+    }
+    .detailsRow {
+        border-bottom: 1px solid #aaa;
+    }
+    input.sameLineCheckbox {
+        margin-left: 1.5em;
+    }
+    .sameLineLabel {
+        margin-left: 2.8em;
+    }
     </style>
 {% endblock %}
 {% block title %}Dánarbú - 18. og 19. öld{% endblock %}
@@ -18,13 +31,13 @@
 
 {% block content %}
 <div class="container">
-       <form action="/" method="POST" id="leitarform">
+    <form action="/" method="GET" id="leitarform">
         {{search_form.hidden_tag()}}
         <div class="input-group mb-3">
-        <div class="input-group-prepend">
-            <span class="input-group-text" id="basic-addon1">{{ search_form.search_string.label.text}}:</span>
-        </div>
-        {{search_form.search_string(placeholder="Sláðu inn leitarstreng", class="form-control")}}
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="basic-addon1">{{ search_form.search_string.label.text}}:</span>
+            </div>
+                {{search_form.search_string(placeholder="Sláðu inn leitarstreng", class="form-control")}}
             <div class="input-group-append">
                 <button class="btn btn-primary" type="submit">
                     <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-search" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -34,19 +47,28 @@
                 </button>
             </div>
         </div>
-  <a class="btn btn-secondary" data-toggle="collapse" href="#itarleit" role="button" aria-expanded="false" aria-controls="itarleit">Ítarleg leit</a>
-<div class="collapse {{show_advanced_search}}" id="itarleit">
+    </form>
+    <a class="btn btn-secondary" data-toggle="collapse" href="#itarleit" role="button" aria-expanded="false" aria-controls="itarleit">Ítarleg leit</a>
+        <div class="collapse {{show_advanced_search}}" id="itarleit">
+            <div class="card card-body">
+                Hér kemur ítarleg leit
+            </div>
+        </div>
 
-      <div class="card card-body">
-        Hér kemur ítarleg leit
-      </div>
-    </div>
-        </form>
+<div class="danarbuSpacer">
+</div>
+
 
 {% block search_results %}
 {% endblock %}
+
+<div class="danarbuSpacer">
+</div>
+
+
 
 </div>
 
 
 {% endblock %}
+

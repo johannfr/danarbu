@@ -82,6 +82,17 @@ visitor = "*"
 
 [[package]]
 category = "main"
+description = "Simple paginate support for flask"
+name = "flask-paginate"
+optional = false
+python-versions = "*"
+version = "0.7.1"
+
+[package.dependencies]
+Flask = "*"
+
+[[package]]
+category = "main"
 description = "Adds SQLAlchemy support to your Flask application."
 name = "flask-sqlalchemy"
 optional = false
@@ -278,6 +289,17 @@ postgresql_psycopg2cffi = ["psycopg2cffi"]
 pymysql = ["pymysql"]
 
 [[package]]
+category = "main"
+description = "Provide FullText for MYSQL & SQLAlchemy model"
+name = "sqlalchemy-fulltext-search"
+optional = false
+python-versions = "*"
+version = "0.2.5"
+
+[package.dependencies]
+SQLAlchemy = ">=1.0"
+
+[[package]]
 category = "dev"
 description = "Traitlets Python configuration system"
 name = "traitlets"
@@ -336,7 +358,7 @@ ipaddress = ["ipaddress"]
 locale = ["Babel (>=1.3)"]
 
 [metadata]
-content-hash = "2d38aeb94d03a7557bdbc437ac760c932a8d64363b8dceb8837fb5ffb9d2c671"
+content-hash = "4a6740484fc11aef94cc5dff44b5989517296a58d3af4ac9dada7e369b830db5"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -371,6 +393,10 @@ flask = [
 flask-bootstrap4 = [
     {file = "Flask-Bootstrap4-4.0.2.tar.gz", hash = "sha256:fcd52206a844573692b86ee79522f970363eb1df29f57c2eb52bd2cbc6ffb9ee"},
     {file = "Flask_Bootstrap4-4.0.2-py3-none-any.whl", hash = "sha256:92780298aa8c22f34be4b4ed7cb4cdec1f5302b625cda7f519dc9aa6e1d0d023"},
+]
+flask-paginate = [
+    {file = "flask-paginate-0.7.1.tar.gz", hash = "sha256:949b93d0535d1223b91ac0048586bd878aaebf4044c54c1dc3068acc9bdf441f"},
+    {file = "flask_paginate-0.7.1-py2.py3-none-any.whl", hash = "sha256:f69434e9a8d85e50bd248c52bd8b22b0ca0284edef45d3c51b3ab5e4f703b733"},
 ]
 flask-sqlalchemy = [
     {file = "Flask-SQLAlchemy-2.4.4.tar.gz", hash = "sha256:bfc7150eaf809b1c283879302f04c42791136060c6eeb12c0c6674fb1291fae5"},
@@ -504,6 +530,9 @@ sqlalchemy = [
     {file = "SQLAlchemy-1.3.20-cp39-cp39-win32.whl", hash = "sha256:0cca1844ba870e81c03633a99aa3dc62256fb96323431a5dec7d4e503c26372d"},
     {file = "SQLAlchemy-1.3.20-cp39-cp39-win_amd64.whl", hash = "sha256:d05cef4a164b44ffda58200efcb22355350979e000828479971ebca49b82ddb1"},
     {file = "SQLAlchemy-1.3.20.tar.gz", hash = "sha256:d2f25c7f410338d31666d7ddedfa67570900e248b940d186b48461bd4e5569a1"},
+]
+sqlalchemy-fulltext-search = [
+    {file = "SQLAlchemy-FullText-Search-0.2.5.tar.gz", hash = "sha256:2584d5761cf2b87f52fd2b270a8d6fe51d3bcfee058f2a22dea8093581d704b2"},
 ]
 traitlets = [
     {file = "traitlets-5.0.3-py3-none-any.whl", hash = "sha256:8bdadb17a04c844f444cdefaa3dee47a12ff14cf6277b9eeda29bfa0659d5987"},

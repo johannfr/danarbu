@@ -10,6 +10,9 @@ flask==1.1.2 \
 flask-bootstrap4==4.0.2 \
     --hash=sha256:fcd52206a844573692b86ee79522f970363eb1df29f57c2eb52bd2cbc6ffb9ee \
     --hash=sha256:92780298aa8c22f34be4b4ed7cb4cdec1f5302b625cda7f519dc9aa6e1d0d023
+flask-paginate==0.7.1 \
+    --hash=sha256:949b93d0535d1223b91ac0048586bd878aaebf4044c54c1dc3068acc9bdf441f \
+    --hash=sha256:f69434e9a8d85e50bd248c52bd8b22b0ca0284edef45d3c51b3ab5e4f703b733
 flask-sqlalchemy==2.4.4 \
     --hash=sha256:bfc7150eaf809b1c283879302f04c42791136060c6eeb12c0c6674fb1291fae5 \
     --hash=sha256:05b31d2034dd3f2a685cbbae4cfc4ed906b2a733cff7964ada450fd5e462b84e
@@ -100,6 +103,8 @@ sqlalchemy==1.3.20 \
     --hash=sha256:0cca1844ba870e81c03633a99aa3dc62256fb96323431a5dec7d4e503c26372d \
     --hash=sha256:d05cef4a164b44ffda58200efcb22355350979e000828479971ebca49b82ddb1 \
     --hash=sha256:d2f25c7f410338d31666d7ddedfa67570900e248b940d186b48461bd4e5569a1
+sqlalchemy-fulltext-search==0.2.5 \
+    --hash=sha256:2584d5761cf2b87f52fd2b270a8d6fe51d3bcfee058f2a22dea8093581d704b2
 visitor==0.1.3 \
     --hash=sha256:2c737903b2b6864ebc6167eef7cf3b997126f1aa94bdf590f90f1436d23e480a
 werkzeug==1.0.1 \

@@ -4,5 +4,8 @@ from wtforms.validators import DataRequired
 
 
 class SimpleSearchForm(FlaskForm):
+    class Meta:
+        csrf = False
+
     search_string = StringField("Leit")
     submit = SubmitField("Leita")

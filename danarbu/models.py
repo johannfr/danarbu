@@ -1,6 +1,6 @@
 from danarbu import db
 import enum
-
+from sqlalchemy_fulltext import FullText
 
 Kyn = enum.Enum(
     value="kyn",
@@ -25,8 +25,15 @@ Tilvist = enum.Enum(
 )
 
 
-class Danarbu(db.Model):
+class Danarbu(FullText, db.Model):
     __tablename__ = "tbl_danarbu"
+    __fulltext_columns__ = (
+        "nafn",
+        "stada",
+        "baer_heiti",
+        "sysla_heiti",
+        "sokn_heiti",
+    )
     id = db.Column(db.Integer, primary_key=True)
     nafn = db.Column(db.String(100))
     stada = db.Column(db.String(200))
@@ -67,6 +74,9 @@ class Heimildir(db.Model):
     endanleg = db.Column(db.String(100))
     tilvisun = db.Column(db.String(200))
     tegund = db.Column(db.String(100))
+
+    def __repr__(self):
+        return "<Heimildir {}: {}>".format(self.id, self.danarbu)
 
 
 class Myndir(db.Model):
