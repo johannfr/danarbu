@@ -1,5 +1,5 @@
 #!/bin/bash
 
-git stash run.sh
+git stash
 git pull
 git stash pop
