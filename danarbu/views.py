@@ -64,7 +64,13 @@ def myndir():
             .order_by(models.Myndir.id)
             .all()
         ):
-            myndir.append({"tegund": heimild.tegund, "slod": mynd.slod})
+            myndir.append(
+                {
+                    "tegund": heimild.tegund,
+                    "endanleg": heimild.endanleg,
+                    "slod": mynd.slod,
+                }
+            )
     if len(myndir) == 0:
         return "Engar myndir tilheyra þessari færslu."
     else:
