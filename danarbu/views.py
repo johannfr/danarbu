@@ -8,7 +8,6 @@ import sqlalchemy_fulltext.modes as FullTextMode
 
 @app.route("/", methods=["GET"])
 def root():
-    print(request.args)
     simple_form = SimpleSearchForm(request.args)
     if simple_form.validate():
         page = request.args.get(get_page_parameter(), type=int, default=1)
@@ -21,7 +20,6 @@ def root():
             )
             .paginate(page, app.config["DEFAULT_ITEMS_PER_PAGE"], False)
         )
-        print(results.total)
         pagination = Pagination(
             page=page,
             total=results.total,
@@ -61,7 +59,6 @@ def myndir():
         .order_by(models.Heimildir.id)
         .all()
     ):
-        print(heimild.id)
         for mynd in (
             models.Myndir.query.filter(models.Myndir.heimild == heimild.id)
             .order_by(models.Myndir.id)
