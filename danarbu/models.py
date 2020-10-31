@@ -1,6 +1,38 @@
 from danarbu import db
 import enum
-from sqlalchemy_fulltext import FullText
+
+from sqlalchemy.ext.compiler import compiles
+from sqlalchemy.sql.expression import ClauseElement, ColumnElement
+from sqlalchemy import literal
+
+
+class Match(ClauseElement):
+    def __init__(self, columns, value):
+        self.columns = columns
+        self.value = literal(value)
+
+
+@compiles(Match)
+def _match(element, compiler, **kw):
+    return "MATCH ({}) AGAINST ({} IN BOOLEAN MODE)".format(
+        ", ".join(compiler.process(c, **kw) for c in element.columns),
+        compiler.process(element.value),
+    )
+
+
+class MatchCol(ColumnElement):
+    def __init__(self, columns, value):
+        self.columns = columns
+        self.value = literal(value)
+
+
+@compiles(MatchCol)
+def _match(element, compiler, **kw):
+    return "MATCH ({}) AGAINST ({} IN BOOLEAN MODE)".format(
+        ", ".join(compiler.process(c, **kw) for c in element.columns),
+        compiler.process(element.value),
+    )
+
 
 Kyn = enum.Enum(
     value="kyn",
@@ -25,15 +57,8 @@ Tilvist = enum.Enum(
 )
 
 
-class Danarbu(FullText, db.Model):
+class Danarbu(db.Model):
     __tablename__ = "tbl_danarbu"
-    __fulltext_columns__ = (
-        "nafn",
-        "stada",
-        "baer_heiti",
-        "sysla_heiti",
-        "sokn_heiti",
-    )
     id = db.Column(db.Integer, primary_key=True)
     nafn = db.Column(db.String(100))
     stada = db.Column(db.String(200))
