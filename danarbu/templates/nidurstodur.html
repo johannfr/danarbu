@@ -21,6 +21,9 @@
         </div>
         <div id="collapse{{danarbu.id}}" db-id="{{danarbu.id}}" class="collapse resultContainer" aria-labelledby="heading{{danarbu.id}}" data-parent="#accordionExample">
             <div class="card-body">
+                <div class="row">
+                    <div class="col text-right small"><b>Auðkenni:</b> {{danarbu.id}}</div>
+                </div>
                 <div class="row detailsRow">
                     <div class="col"><b>Kyn:</b> {{danarbu.kyn.name}}</div>
                     <div class="col"><b>Staða:</b> {{danarbu.stada or "Óskráð"}}</div>
@@ -96,9 +99,6 @@
                             <div class="col text-right"><b>Mat:</b></div><div class="col">{{"{} {}".format(danarbu.mat, "ríkisdalir") if danarbu.mat else "Óskráð" }}</div>
                         </div>
                     </div>
-                </div>
-                <div class="row detailsRow">
-                    <div class="col"><b>Auðkenni:</b><p>{{danarbu.id}}</p></div>
                 </div>
                 <div class="row detailsRow">
                     <div class="col"><b>Athugasemdir:</b><p>{{danarbu.athugasemdir}}</p></div>

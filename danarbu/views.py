@@ -35,9 +35,7 @@ def root():
             css_framework="bootstrap4",
             alignment="center",
         )
-        results = []
-        for result, score in search_query.items:
-            results.append(result)
+        results = [result for result, score in search_query.items]
 
         for result in results:
             result.heimildir = []
