@@ -1,0 +1,120 @@
+<div class="card-body">
+                <div class="row">
+                    <div class="col text-right small"><b>Auðkenni:</b> {{danarbu.id}}</div>
+                </div>
+                <div class="row detailsRow">
+                    <div class="col"><b>Kyn:</b> {{danarbu.kyn.name}}</div>
+                    <div class="col"><b>Staða:</b> {{danarbu.stada or "Óskráð"}}</div>
+                    <div class="col"><b>Fæðing:</b> {{danarbu.faeding or "Óskráð"}}</div>
+                    <div class="col"><b>Andlát:</b> {{danarbu.andlat or "Óskráð"}}</div>
+                </div>
+                <div class="row detailsRow">
+                    <div class="col">
+
+                        <div class="row">
+                            <div class="form-check">
+                                <div class="col">
+                                    <input type="checkbox" class="form-check-input" onClick="return false" {{"checked" if danarbu.lifandi else ""}}>
+                                    <label class="form-check-labelledby">Er lifandi</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="form-check">
+                                <div class="col">
+                                    <input type="checkbox" class="form-check-input" onClick="return false" {{"checked" if danarbu.enginAldur else ""}}>
+                                    <label class="form-check-labelledby">Enginn aldur fannst</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="form-check">
+                                <div class="col">
+                                    <input type="checkbox" class="form-check-input" onClick="return false" {{"checked" if danarbu.danarbu.value == 1 else ""}}>
+                                    <label class="form-check-labelledby">Dánarbú til</label>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="row">
+                            <div class="form-check">
+                                <div class="col">
+                                    <input type="checkbox" class="form-check-input" onClick="return false" {{"checked" if danarbu.skiptabok.value in [1, 3] else ""}}>
+                                    <label class="form-check-labelledby">Skiptabók til</label>
+                                    <input type="checkbox" class="form-check-input sameLineCheckbox" onClick="return false" {{"checked" if danarbu.skiptabok.value == 2 else ""}}>
+                                    <label class="form-check-labelledby sameLineLabel">Lóðaseðlar</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="form-check">
+                                <div class="col">
+                                    <input type="checkbox" class="form-check-input" onClick="return false" {{"checked" if danarbu.uppskrift.value in [1, 3] else ""}}>
+                                    <label class="form-check-labelledby">Uppboð til</label>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                    <div class="col">
+                        <div class="row">
+                            <div class="col text-right"><b>Uppboð:</b></div><div class="col">{{danarbu.uppbod or "Óskráð"}}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col text-right"><b>Skipti framkvæmd:</b></div><div class="col">{{danarbu.skipti or "Óskráð"}}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col text-right"><b>Skráð:</b></div><div class="col">{{danarbu.skraning or "Óskráð"}}</div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="row">
+                            <div class="col text-right"><b>Mat:</b></div><div class="col">{{"{} {}".format(danarbu.mat, "ríkisdalir") if danarbu.mat else "Óskráð" }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col"><b>Heimildir:</b>
+                            <div class="row pl-2">
+                                <div class="col"><b>Skrifað</b></div>
+                                <div class="col-6"><b>Tilvísun</b></div>
+                                <div class="col"><b>Tegund</b></div>
+                                <div class="col"><b>Sýsla</b></div>
+                            </div>
+                        {% for heimild in danarbu.heimildir %}
+                            <div class="row pl-2">
+                                <div class="col">{{heimild.upprunaleg}}</div>
+                                <div class="col-6">{{heimild.tilvisun}}</div>
+                                <div class="col">{{heimild.tegund}}</div>
+                                <div class="col">{{danarbu.sysla_heiti}}</div>
+                            </div>
+                            <div class="row pl-2">
+                                <div class="col">
+                                    {% for mynd in heimild.myndir %}
+                                    {% if loop.first %}
+                                    <div class="myndirContainer">
+                                    {% endif %}
+                                        <a href="/myndir?id={{heimild.id}}&index={{loop.index - 1}}" target="_blank">
+                                            <img src="{{mynd.slod}}?w=56&h=56&mode=crop" />
+                                        </a>
+                                    {% if loop.last %}
+                                    </div>
+                                    {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {#
+                <div class="row detailsRow">
+                    <div class="col"><b>Athugasemdir:</b><p>{{danarbu.athugasemdir}}</p></div>
+                </div>
+                #}
+
+            </div>

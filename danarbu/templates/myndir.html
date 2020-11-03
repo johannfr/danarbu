@@ -1,5 +1,53 @@
-{% for mynd in myndir %}
-<a href={{mynd.slod}}>
-    <img src="{{mynd.slod}}?w=56&h=56&mode=crop" alt="{{mynd.tegund}} - {{mynd.endanleg}}" />
-</a>
-{% endfor %}
+{% extends "bootstrap/base.html" %}
+{% block html_attribs %} lang="is"{% endblock %}
+{% block styles %}
+{{super()}}
+    <link type="text/css" rel="stylesheet" href="static/css/lightgallery.css" />
+    <style type="text/css">
+        body {
+            background-color: black;
+        }
+
+        .lg-close {
+            display: None;
+        }
+    </style>
+{% endblock %}
+{% block title %}{{heimild.tegund}} - {{heimild.endanleg}}{% endblock %}
+
+
+{% block content %}
+Hér er ekkert.
+{% endblock %}
+{% block scripts %}
+{{super()}}
+<script src="static/js/lightgallery.min.js"></script>
+<script src="static/js/lg-zoom.min.js"></script>
+<script src="static/js/lg-thumbnail.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+
+    $(this).lightGallery({
+        closable: false,
+        loop: false,
+        escKey: false,
+        speed: 200,
+        preload: 3,
+        index: {{upphaf}},
+        thumbnail: true,
+        dynamic: true,
+        dynamicEl: [
+            {% for mynd in myndir %}
+            {
+                "src": "{{mynd.slod}}",
+                "thumb": "{{mynd.slod}}?w=56&h=56&mode=crop",
+                "subHtml": "<h4>{{heimild.tegund}}</h4><p>{{heimild.endanleg}}</p>"
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ]
+    });
+    
+
+});
+</script>
+{% endblock %}

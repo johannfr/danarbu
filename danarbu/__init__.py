@@ -1,5 +1,5 @@
 from flask import Flask
-from flask_bootstrap import Bootstrap
+from flask_bs4 import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 from danarbu.config import Config
 from sqlalchemy import text, bindparam

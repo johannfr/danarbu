@@ -8,7 +8,7 @@ from sqlalchemy import desc
 @app.route("/", methods=["GET"])
 def root():
     simple_form = SimpleSearchForm(request.args)
-    if simple_form.validate():
+    if simple_form.validate() and simple_form.search_string.data:
         page = request.args.get(get_page_parameter(), type=int, default=1)
         fulltext_columns = [
             models.Danarbu.nafn,
@@ -37,12 +37,6 @@ def root():
         )
         results = [result for result, score in search_query.items]
 
-        for result in results:
-            result.heimildir = []
-            for heimild in db.session.query(models.Heimildir).filter(
-                models.Heimildir.danarbu == result.id
-            ):
-                result.heimildir.append(heimild)
         return render_template(
             "nidurstodur.html",
             search_form=simple_form,
@@ -54,6 +48,26 @@ def root():
         return render_template("index.html", search_form=simple_form)
 
 
+@app.route("/faersla", methods=["GET"])
+def faersla():
+    danarbu_id = request.args.get("id", type=int, default=1)
+    danarbu = db.session.query(models.Danarbu).get(danarbu_id)
+    danarbu.heimildir = []
+    for heimild in db.session.query(models.Heimildir).filter(
+        models.Heimildir.danarbu == danarbu.id
+    ):
+        heimild.myndir = []
+        for mynd in (
+            db.session.query(models.Myndir)
+            .filter(models.Myndir.heimild == heimild.id)
+            .order_by(models.Myndir.id)
+        ):
+            heimild.myndir.append(mynd)
+        danarbu.heimildir.append(heimild)
+
+    return render_template("faersla.html", danarbu=danarbu)
+
+
 @app.route("/itarleit")
 def itarleit():
     return "Það er engin ítarleit ennþá."
@@ -61,26 +75,24 @@ def itarleit():
 
 @app.route("/myndir")
 def myndir():
-    danarbu_id = request.args.get("id", type=int, default=1)
+    heimild_id = request.args.get("id", type=int, default=1)
+    open_index = request.args.get("index", type=int, default=0)
+
+    heimild = db.session.query(models.Heimildir).get(heimild_id)
     myndir = []
-    for heimild in (
-        models.Heimildir.query.filter(models.Heimildir.danarbu == danarbu_id)
-        .order_by(models.Heimildir.id)
+    for mynd in (
+        models.Myndir.query.filter(models.Myndir.heimild == heimild_id)
+        .order_by(models.Myndir.id)
         .all()
     ):
-        for mynd in (
-            models.Myndir.query.filter(models.Myndir.heimild == heimild.id)
-            .order_by(models.Myndir.id)
-            .all()
-        ):
-            myndir.append(
-                {
-                    "tegund": heimild.tegund,
-                    "endanleg": heimild.endanleg,
-                    "slod": mynd.slod,
-                }
-            )
+        myndir.append(
+            {
+                "slod": mynd.slod,
+            }
+        )
     if len(myndir) == 0:
         return "Engar myndir tilheyra þessari færslu."
     else:
-        return render_template("myndir.html", myndir=myndir)
+        return render_template(
+            "myndir.html", myndir=myndir, upphaf=open_index, heimild=heimild
+        )
