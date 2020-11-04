@@ -80,12 +80,6 @@
                 </div>
                 <div class="row">
                     <div class="col"><b>Heimildir:</b>
-                            <div class="row pl-2">
-                                <div class="col"><b>Skrifað</b></div>
-                                <div class="col-6"><b>Tilvísun</b></div>
-                                <div class="col"><b>Tegund</b></div>
-                                <div class="col"><b>Sýsla</b></div>
-                            </div>
                         {% for heimild in danarbu.heimildir %}
                             <div class="row pl-2">
                                 <div class="col">{{heimild.upprunaleg}}</div>
@@ -97,6 +91,7 @@
                                 <div class="col">
                                     {% for mynd in heimild.myndir %}
                                     {% if loop.first %}
+                                    <b>Myndir</b>
                                     <div class="myndirContainer">
                                     {% endif %}
                                         <a href="/myndir?id={{heimild.id}}&index={{loop.index - 1}}" target="_blank">
