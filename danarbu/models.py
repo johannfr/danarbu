@@ -51,7 +51,7 @@ Tilvist = enum.Enum(
         ("til", 1),
         ("Ekki Til", 2),
         ("ekki_til", 2),
-        ("Loðs", 3),
+        ("Loðs", 3),  # Bara notad af "danarbu", aldrei "skiptabok" eda "uppskrift"
         ("lods", 3),
     ],
 )

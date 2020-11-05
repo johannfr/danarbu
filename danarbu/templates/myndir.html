@@ -13,7 +13,7 @@
         }
     </style>
 {% endblock %}
-{% block title %}{{heimild.tegund}} - {{heimild.endanleg}}{% endblock %}
+{% block title %}{{heimild.tegund}} - {{heimild.tilvisun}}{% endblock %}
 
 
 {% block content %}
@@ -22,8 +22,10 @@ Hér er ekkert.
 {% block scripts %}
 {{super()}}
 <script src="static/js/lightgallery.min.js"></script>
+<script src="static/js/lg-fullscreen.min.js"></script>
 <script src="static/js/lg-zoom.min.js"></script>
 <script src="static/js/lg-thumbnail.min.js"></script>
+<script src="static/js/lg-share.min.js"></script>
 <script type="text/javascript">
 $(document).ready(function() {
 
@@ -35,13 +37,16 @@ $(document).ready(function() {
         preload: 3,
         index: {{upphaf}},
         thumbnail: true,
+        fullscreen: true,
+        share: true,
+        googlePlus: false,
         dynamic: true,
         dynamicEl: [
             {% for mynd in myndir %}
             {
                 "src": "{{mynd.slod}}",
                 "thumb": "{{mynd.slod}}?w=56&h=56&mode=crop",
-                "subHtml": "<h4>{{heimild.tegund}}</h4><p>{{heimild.endanleg}}</p>"
+                "subHtml": "<h4>{{heimild.tegund}}</h4><p>{{heimild.tilvisun}}</p>"
             }{% if not loop.last %},{% endif %}
             {% endfor %}
         ]

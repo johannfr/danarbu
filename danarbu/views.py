@@ -1,8 +1,9 @@
 from flask import render_template, request, redirect, url_for
 from flask_paginate import Pagination, get_page_parameter
+from sqlalchemy import desc
+
 from danarbu import app, db, models
 from danarbu.forms import SimpleSearchForm
-from sqlalchemy import desc
 
 
 @app.route("/", methods=["GET"])
@@ -48,14 +49,51 @@ def root():
         return render_template("index.html", search_form=simple_form)
 
 
+def parse_date(date):
+    try:
+        dagur, manudur, ar = date.split(".")
+        manudur_nofn = {
+            1: "janúar",
+            2: "febúar",
+            3: "mars",
+            4: "apríl",
+            5: "maí",
+            6: "júní",
+            7: "júlí",
+            8: "ágúst",
+            9: "september",
+            10: "október",
+            11: "nóvember",
+            12: "desember",
+        }
+        return "{}. {}, {}".format(dagur, manudur_nofn[int(manudur)], ar)
+    except ValueError:
+        pass
+    try:
+        return int(date)  # Stundum bara artal
+    except ValueError or TypeError:
+        pass
+    return None
+
+
 @app.route("/faersla", methods=["GET"])
 def faersla():
     danarbu_id = request.args.get("id", type=int, default=1)
     danarbu = db.session.query(models.Danarbu).get(danarbu_id)
+    dags = {}
+    dags["andlat"] = parse_date(danarbu.andlat)
+    dags["faeding"] = parse_date(danarbu.faeding)
+    dags["skraning"] = parse_date(danarbu.skraning)
+    dags["uppbod"] = parse_date(danarbu.uppbod)
+    dags["skipti"] = parse_date(danarbu.skipti)
     danarbu.heimildir = []
     for heimild in db.session.query(models.Heimildir).filter(
         models.Heimildir.danarbu == danarbu.id
     ):
+        if heimild.endanleg and len(heimild.endanleg) > 0:
+            heimild_tengill = "http://skjalaskrar.skjalasafn.is/b/" + heimild.endanleg
+        else:
+            heimild_tengill = "http://skjalaskrar.skjalasafn.is/b/" + heimild.upprunaleg
         heimild.myndir = []
         for mynd in (
             db.session.query(models.Myndir)
@@ -65,7 +103,9 @@ def faersla():
             heimild.myndir.append(mynd)
         danarbu.heimildir.append(heimild)
 
-    return render_template("faersla.html", danarbu=danarbu)
+    return render_template(
+        "faersla.html", danarbu=danarbu, dags=dags, heimild_tengill=heimild_tengill
+    )
 
 
 @app.route("/itarleit")
