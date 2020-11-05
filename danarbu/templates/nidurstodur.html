@@ -18,7 +18,7 @@
 
 {% for danarbu in search_results %}
         <tr>
-            <td><a href="#" data-toggle="modal" data-target="#resultModal" data-danarbu="{{danarbu.id}}" data-nafn="{{danarbu.nafn}}">{{danarbu.nafn or "Óskráð"}}</a></td>
+            <td><a href="#" data-toggle="modal" data-target="#resultModal" data-danarbu="{{danarbu.id}}" data-nafn="{{danarbu.nafn}}" data-artal="{{danarbu.artal}}">{{danarbu.nafn or "Óskráð"}}</a></td>
             <td>{{danarbu.artal or "Óskráð"}}</td>
             <td>{{danarbu.aldur or ""}}</td>
             <td>{{danarbu.baer_heiti or "Óskráð"}}</td>
@@ -42,7 +42,7 @@
         ...
       </div>
       <div class="modal-footer">
-        <a role="button" class="btn btn-secondary mr-auto" href="mailto:danarbu@skjalasafn.is">Senda ábendingu</a>
+        <a role="button" id="abendingButton" class="btn btn-secondary mr-auto" href="#">Senda ábendingu</a>
         <button type="button" class="btn btn-primary" data-dismiss="modal">Loka</button>
       </div>
     </div>

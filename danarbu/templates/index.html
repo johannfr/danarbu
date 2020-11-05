@@ -85,7 +85,9 @@ $("#resultModal").on("show.bs.modal", function (e) {
     var button = $(e.relatedTarget);
     var danarbu = button.data("danarbu");
     var nafn = button.data("nafn");
-    $("#resultTitle").text(nafn);
+    var artal = button.data("artal");
+    $("#resultTitle").text(nafn + ", " + artal);
+    $("#abendingButton").attr("href", "mailto:danarbu@skjalasafn.is?subject=Ábending vegna færslu: "+danarbu);
     $.ajax({
         url: "/faersla",
         data: {
