@@ -1,11 +1,14 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
-from wtforms.validators import DataRequired
+from wtforms import StringField, SubmitField, SelectField, HiddenField
+from wtforms.validators import required, optional
 
 
-class SimpleSearchForm(FlaskForm):
+class SearchForm(FlaskForm):
     class Meta:
         csrf = False
 
-    search_string = StringField("Leit")
-    submit = SubmitField("Leita")
+    show_advanced_search = HiddenField(default="false")
+    search_string = StringField("Leit", [optional()])
+    sysla_select = SelectField("Sýsla", [optional()])
+    sokn_select = SelectField("Sókn", [optional()])
+    baer_select = SelectField("Bær", [optional()])

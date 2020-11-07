@@ -1,16 +1,68 @@
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, jsonify
 from flask_paginate import Pagination, get_page_parameter
-from sqlalchemy import desc
+from sqlalchemy import desc, and_
 
 from danarbu import app, db, models
-from danarbu.forms import SimpleSearchForm
+from danarbu.forms import SearchForm
+
+
+def is_relevant(field, enabled=True):
+    if enabled and field.data != None and len(field.data) > 0:
+        return True
+    return False
 
 
 @app.route("/", methods=["GET"])
 def root():
-    simple_form = SimpleSearchForm(request.args)
-    if simple_form.validate() and simple_form.search_string.data:
+    search_form = SearchForm(request.args)
+
+    syslur = [("", "")]
+    soknir = [("", "")]
+    baeir = [("", "")]
+    for (sysla,) in (
+        db.session.query(models.Danarbu.sysla_heiti)
+        .distinct()
+        .order_by(models.Danarbu.sysla_heiti)
+        .all()
+    ):
+        syslur.append((sysla, sysla))
+    search_form.sysla_select.choices = syslur
+
+    search_form.sokn_select.render_kw = {"disabled": True}
+    if is_relevant(search_form.sysla_select):
+        for (sokn,) in (
+            db.session.query(models.Danarbu.sokn_heiti)
+            .filter(models.Danarbu.sysla_heiti == search_form.sysla_select.data)
+            .distinct()
+            .order_by(models.Danarbu.sokn_heiti)
+            .all()
+        ):
+            soknir.append((sokn, sokn))
+        search_form.sokn_select.render_kw = {"disabled": False}
+
+    search_form.baer_select.render_kw = {"disabled": True}
+    if is_relevant(search_form.sokn_select):
+        for (baer,) in (
+            db.session.query(models.Danarbu.baer_heiti)
+            .filter(
+                and_(
+                    models.Danarbu.sysla_heiti == search_form.sysla_select.data,
+                    models.Danarbu.sokn_heiti == search_form.sokn_select.data,
+                )
+            )
+            .distinct()
+            .order_by(models.Danarbu.baer_heiti)
+            .all()
+        ):
+            baeir.append((baer, baer))
+        search_form.baer_select.render_kw = {"disabled": False}
+
+    search_form.sokn_select.choices = soknir
+    search_form.baer_select.choices = baeir
+
+    if search_form.validate() and request.args:
         page = request.args.get(get_page_parameter(), type=int, default=1)
+
         fulltext_columns = [
             models.Danarbu.nafn,
             models.Danarbu.stada,
@@ -18,16 +70,43 @@ def root():
             models.Danarbu.sysla_heiti,
             models.Danarbu.sokn_heiti,
         ]
-        search_query = (
-            db.session.query(
-                models.Danarbu,
-                models.MatchCol(fulltext_columns, simple_form.search_string.data).label(
-                    "score"
-                ),
+        if is_relevant(search_form.search_string):
+            search_query = (
+                db.session.query(
+                    models.Danarbu,
+                    models.MatchCol(
+                        fulltext_columns, search_form.search_string.data
+                    ).label("score"),
+                )
+                .filter(models.Match(fulltext_columns, search_form.search_string.data))
+                .order_by(desc("score"))
             )
-            .filter(models.Match(fulltext_columns, simple_form.search_string.data))
-            .order_by(desc("score"))
-            .paginate(page, app.config["DEFAULT_ITEMS_PER_PAGE"], False)
+        else:
+            search_query = db.session.query(models.Danarbu).order_by("nafn")
+
+        if is_relevant(
+            search_form.sysla_select, search_form.show_advanced_search.data == "true"
+        ):
+            search_query = search_query.filter(
+                models.Danarbu.sysla_heiti == search_form.sysla_select.data
+            )
+
+        if is_relevant(
+            search_form.sokn_select, search_form.show_advanced_search.data == "true"
+        ):
+            search_query = search_query.filter(
+                models.Danarbu.sokn_heiti == search_form.sokn_select.data
+            )
+
+        if is_relevant(
+            search_form.baer_select, search_form.show_advanced_search.data == "true"
+        ):
+            search_query = search_query.filter(
+                models.Danarbu.baer_heiti == search_form.baer_select.data
+            )
+
+        search_query = search_query.paginate(
+            page, app.config["DEFAULT_ITEMS_PER_PAGE"], False
         )
         pagination = Pagination(
             page=page,
@@ -36,17 +115,22 @@ def root():
             css_framework="bootstrap4",
             alignment="center",
         )
-        results = [result for result, score in search_query.items]
+        if len(search_form.search_string.data) > 0:
+            results = [result for result, score in search_query.items]
+        else:
+            results = search_query.items
 
         return render_template(
             "nidurstodur.html",
-            search_form=simple_form,
-            show_advanced_search="",
+            search_form=search_form,
+            show_advanced_search="show"
+            if search_form.show_advanced_search.data == "true"
+            else "",
             search_results=results,
             pagination=pagination,
         )
     else:
-        return render_template("index.html", search_form=simple_form)
+        return render_template("index.html", search_form=search_form, syslur=syslur)
 
 
 def parse_date(date):
@@ -136,3 +220,39 @@ def myndir():
         return render_template(
             "myndir.html", myndir=myndir, upphaf=open_index, heimild=heimild
         )
+
+
+@app.route("/soknir")
+def soknir():
+    sysla_heiti = request.args.get("sysla", type=str)
+    return jsonify(
+        [
+            sokn
+            for sokn, in db.session.query(models.Danarbu.sokn_heiti)
+            .filter(models.Danarbu.sysla_heiti == sysla_heiti)
+            .distinct()
+            .order_by(models.Danarbu.sokn_heiti)
+            .all()
+        ]
+    )
+
+
+@app.route("/baeir")
+def baeir():
+    sysla_heiti = request.args.get("sysla", type=str)
+    sokn_heiti = request.args.get("sokn", type=str)
+    return jsonify(
+        [
+            baer
+            for baer, in db.session.query(models.Danarbu.baer_heiti)
+            .filter(
+                and_(
+                    models.Danarbu.sysla_heiti == sysla_heiti,
+                    models.Danarbu.sokn_heiti == sokn_heiti,
+                )
+            )
+            .distinct()
+            .order_by(models.Danarbu.baer_heiti)
+            .all()
+        ]
+    )

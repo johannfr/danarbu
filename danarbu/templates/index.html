@@ -36,7 +36,7 @@
 
 {% block content %}
 <div class="container">
-    <form action="/" method="GET" id="leitarform">
+    <form method="GET" id="search_form">
         {{search_form.hidden_tag()}}
         <div class="input-group mb-3">
             <div class="input-group-prepend">
@@ -52,14 +52,41 @@
                 </button>
             </div>
         </div>
-    </form>
-    <a class="btn btn-secondary" data-toggle="collapse" href="#itarleit" role="button" aria-expanded="false" aria-controls="itarleit">Ítarleg leit</a>
+    <a class="btn btn-secondary" data-toggle="collapse" href="#itarleit" role="button" aria-expanded="true" aria-controls="itarleit">Ítarleg leit</a>
         <div class="collapse {{show_advanced_search}}" id="itarleit">
-            <div class="card card-body">
-                Hér kemur ítarleg leit
+            <div class="card">
+                <div class="card-header small">
+                Hér eru ýmsir möguleikar til að þrengja leitarniðurstöður, til viðbótar við leitarstrenginn að ofan.
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-3" style="background-color: lightblue;">
+                            <div class="form-group">
+                                <label for="sysla_select">Sýsla</label>
+                                {{search_form.sysla_select(class="custom-select custom-select-sm")}}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="sokn_select">Sókn</label>
+                                {{search_form.sokn_select(class="custom-select custom-select-sm")}}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="baer_select">Bær</label>
+                                {{search_form.baer_select(class="custom-select custom-select-sm")}}
+                            </div>
+
+
+                        </div>
+                        <div class="col" style="background-color: lightgreen;">
+                            Allt hitt
+                        </div>
+                    </div>
+                <input type="submit" class="btn btn-primary float-right mr-2 ml-2" value="Leita" />
+                </div>
             </div>
         </div>
-
+    </form>
 <div class="danarbuSpacer">
 </div>
 
@@ -81,23 +108,47 @@
 {{super()}}
 <script type="text/javascript">
 $(document).ready(function() {
-$("#resultModal").on("show.bs.modal", function (e) {
-    var button = $(e.relatedTarget);
-    var danarbu = button.data("danarbu");
-    var nafn = button.data("nafn");
-    var artal = button.data("artal");
-    $("#resultTitle").text(nafn + ", " + artal);
-    $("#abendingButton").attr("href", "mailto:danarbu@skjalasafn.is?subject=Ábending vegna færslu: "+danarbu);
-    $.ajax({
-        url: "/faersla",
-        data: {
-            id: danarbu
-        },
-        success: function (result) {
-            $("#resultBody").html(result);
-        }
+
+    $("#resultModal").on("show.bs.modal", function (e) {
+        var button = $(e.relatedTarget);
+        var danarbu = button.data("danarbu");
+        var nafn = button.data("nafn");
+        var artal = button.data("artal");
+        $("#resultTitle").text(nafn + ", " + artal);
+        $("#abendingButton").attr("href", "mailto:danarbu@skjalasafn.is?subject=Ábending vegna færslu: "+danarbu);
+        $.ajax({
+            url: "/faersla",
+            data: {
+                id: danarbu
+            },
+            success: function (result) {
+                $("#resultBody").html(result);
+            }
+        });
     });
-});
+
+    $("#itarleit").on("shown.bs.collapse", function() {
+        $("#show_advanced_search").val("true");
+    });
+
+    $("#itarleit").on("hidden.bs.collapse", function() {
+        $("#show_advanced_search").val("false");
+    });
+
+    $("#sysla_select").on("change", function (e) {
+        $("#sokn_select option:not(:first)").remove();
+        $("#baer_select option:not(:first)").remove();
+        $("#search_form").submit();
+    });
+
+    $("#sokn_select").on("change", function (e) {
+        $("#baer_select option:not(:first)").remove();
+        $("#search_form").submit();
+    });
+    $("#baer_select").on("change", function (e) {
+        $("#search_form").submit();
+    });
+
 });
 </script>
 {% endblock %}
