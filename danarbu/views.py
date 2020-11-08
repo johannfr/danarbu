@@ -82,7 +82,9 @@ def root():
                 .order_by(desc("score"))
             )
         else:
-            search_query = db.session.query(models.Danarbu).order_by("nafn")
+            search_query = db.session.query(models.Danarbu).order_by(
+                models.Danarbu.artal, models.Danarbu.nafn
+            )
 
         if is_relevant(
             search_form.sysla_select, search_form.show_advanced_search.data == "true"
