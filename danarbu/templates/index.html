@@ -24,6 +24,9 @@
         overflow-y: hidden;
         white-space: nowrap;
     }
+    .small-number {
+        width: 4em;
+    }
     </style>
 {% endblock %}
 {% block title %}Dánarbú - 18. og 19. öld{% endblock %}
@@ -60,26 +63,106 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-3" style="background-color: lightblue;">
-                            <div class="form-group">
-                                <label for="sysla_select">Sýsla</label>
-                                {{search_form.sysla_select(class="custom-select custom-select-sm")}}
+                        <div class="col-4">
+                            <div class="input-group input-group-sm mb-3">
+                                <div class="input-group-prepend">
+                                {{search_form.sysla_select.label(class="input-group-text")}}
+                                </div>
+                                {{search_form.sysla_select(class="custom-select form-control")}}
                             </div>
 
-                            <div class="form-group">
-                                <label for="sokn_select">Sókn</label>
-                                {{search_form.sokn_select(class="custom-select custom-select-sm")}}
+                            <div class="input-group input-group-sm mb-3">
+                                <div class="input-group-prepend">
+                                {{search_form.sokn_select.label(class="input-group-text")}}
+                                </div>
+                                {{search_form.sokn_select(class="custom-select form-control")}}
                             </div>
 
-                            <div class="form-group">
-                                <label for="baer_select">Bær</label>
-                                {{search_form.baer_select(class="custom-select custom-select-sm")}}
+                            <div class="input-group input-group-sm mb-3">
+                                <div class="input-group-prepend">
+                                {{search_form.baer_select.label(class="input-group-text")}}
+                                </div>
+                                {{search_form.baer_select(class="custom-select form-control")}}
                             </div>
 
 
                         </div>
-                        <div class="col" style="background-color: lightgreen;">
-                            Allt hitt
+                        <div class="col">
+
+                            <div class="row mb-3">
+                                <div class="col form-inline">
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-prepend">
+                                        {{search_form.tegund_select.label(class="input-group-text")}}
+                                        </div>
+                                        {{search_form.tegund_select(class="custom-select form-control")}}
+                                    </div>
+                                    <div class="input-group input-group-sm w-25 ml-2">
+                                        <div class="input-group-prepend">
+                                        <span class="input-group-text">Ár</span>
+                                        </div>
+                                        {{search_form.ar_fra_input(class="form-control", placeholder="Frá")}}
+                                        {{search_form.ar_til_input(class="form-control", placeholder="Til")}}
+                                    </div>
+                                    <div class="input-group input-group-sm w-25 ml-2">
+                                        <div class="input-group-prepend">
+                                        <span class="input-group-text">Mat</span>
+                                        </div>
+                                        {{search_form.mat_fra_input(class="form-control", placeholder="Frá")}}
+                                        {{search_form.mat_til_input(class="form-control", placeholder="Til")}}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col form-inline">
+                                    <div class="input-group input-group-sm">
+                                        <div class="input-group-prepend">
+                                        {{search_form.nafn_input.label(class="input-group-text")}}
+                                        </div>
+                                        {{search_form.nafn_input(class="form-control")}}
+                                    </div>
+                                    <div class="input-group input-group-sm ml-2">
+                                        <div class="input-group-prepend">
+                                        {{search_form.stada_input.label(class="input-group-text")}}
+                                        </div>
+                                        {{search_form.stada_input(class="form-control basicAutoComplete", autocomplete="off")}}
+                                    </div>
+                                    <div class="input-group input-group-sm ml-2">
+                                        <div class="input-group-prepend">
+                                        {{search_form.kyn_select.label(class="input-group-text")}}
+                                        </div>
+                                        {{search_form.kyn_select(class="custom-select form-control")}}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col form-inline">
+                                    <div class="input-group input-group-sm w-25">
+                                        <div class="input-group-prepend">
+                                        <span class="input-group-text">Aldur</span>
+                                        </div>
+                                        {{search_form.aldur_fra_input(class="form-control", placeholder="Frá")}}
+                                        {{search_form.aldur_til_input(class="form-control", placeholder="Til")}}
+                                    </div>
+                                    <div class="input-group input-group-sm w-25 ml-2">
+                                        <div class="input-group-prepend">
+                                        <span class="input-group-text">Fæðing</span>
+                                        </div>
+                                        {{search_form.faeding_fra_input(class="form-control", placeholder="Frá ári")}}
+                                        {{search_form.faeding_til_input(class="form-control", placeholder="Til árs")}}
+                                    </div>
+                                    <div class="input-group input-group-sm w-25 ml-2">
+                                        <div class="input-group-prepend">
+                                        <span class="input-group-text">Andlát</span>
+                                        </div>
+                                        {{search_form.andlat_fra_input(class="form-control", placeholder="Frá ári")}}
+                                        {{search_form.andlat_til_input(class="form-control", placeholder="Til árs")}}
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 <input type="submit" class="btn btn-primary float-right mr-2 ml-2" value="Leita" />
@@ -106,8 +189,15 @@
 
 {% block scripts %}
 {{super()}}
+<script src="https://cdn.jsdelivr.net/gh/xcash/bootstrap-autocomplete@v2.3.7/dist/latest/bootstrap-autocomplete.min.js"></script>
 <script type="text/javascript">
 $(document).ready(function() {
+
+    $("#stada_input").autoComplete({
+        resolverSettings: {
+            url: "/stada"
+        }
+    });
 
     $("#resultModal").on("show.bs.modal", function (e) {
         var button = $(e.relatedTarget);
@@ -146,6 +236,12 @@ $(document).ready(function() {
         $("#search_form").submit();
     });
     $("#baer_select").on("change", function (e) {
+        $("#search_form").submit();
+    });
+    $("#tegund_select").on("change", function (e) {
+        $("#search_form").submit();
+    });
+    $("#kyn_select").on("change", function (e) {
         $("#search_form").submit();
     });
 

@@ -105,6 +105,114 @@ def root():
                 models.Danarbu.baer_heiti == search_form.baer_select.data
             )
 
+        if is_relevant(
+            search_form.tegund_select, search_form.show_advanced_search.data == "true"
+        ):
+            if search_form.tegund_select.data == "danarbu":
+                search_query = search_query.filter(
+                    models.Danarbu.danarbu == models.Tilvist.til
+                )
+            elif search_form.tegund_select.data == "skiptabok":
+                search_query = search_query.filter(
+                    models.Danarbu.skiptabok == models.Tilvist.til
+                )
+            elif search_form.tegund_select.data == "lods":
+                search_query = search_query.filter(
+                    models.Danarbu.danarbu == models.Tilvist.lods
+                )
+            elif search_form.tegund_select.data == "uppbod":
+                search_query = search_query.filter(
+                    models.Danarbu.uppskrift == models.Tilvist.til
+                )
+
+        if is_relevant(
+            search_form.ar_fra_input, search_form.show_advanced_search.data == "true"
+        ):
+            try:
+                search_query = search_query.filter(
+                    models.Danarbu.artal >= int(search_form.ar_fra_input.data)
+                )
+            except:
+                pass
+
+        if is_relevant(
+            search_form.ar_til_input, search_form.show_advanced_search.data == "true"
+        ):
+            try:
+                search_query = search_query.filter(
+                    models.Danarbu.artal <= int(search_form.ar_til_input.data)
+                )
+            except:
+                pass
+
+        if is_relevant(
+            search_form.mat_fra_input, search_form.show_advanced_search.data == "true"
+        ):
+            try:
+                search_query = search_query.filter(
+                    models.Danarbu.mat >= int(search_form.mat_fra_input.data)
+                )
+            except:
+                pass
+
+        if is_relevant(
+            search_form.mat_til_input, search_form.show_advanced_search.data == "true"
+        ):
+            try:
+                search_query = search_query.filter(
+                    models.Danarbu.mat <= int(search_form.mat_til_input.data)
+                )
+            except:
+                pass
+
+        if is_relevant(
+            search_form.nafn_input, search_form.show_advanced_search.data == "true"
+        ):
+            search_query = search_query.filter(
+                models.Danarbu.nafn.like(search_form.nafn_input.data)
+            )
+
+        if is_relevant(
+            search_form.stada_input, search_form.show_advanced_search.data == "true"
+        ):
+            search_query = search_query.filter(
+                models.Danarbu.stada.like(search_form.stada_input.data)
+            )
+
+        if is_relevant(
+            search_form.kyn_select, search_form.show_advanced_search.data == "true"
+        ):
+            try:
+                search_query = search_query.filter(
+                    models.Danarbu.kyn == int(search_form.kyn_select.data)
+                )
+            except:
+                pass
+
+        if is_relevant(
+            search_form.aldur_fra_input, search_form.show_advanced_search.data == "true"
+        ):
+            try:
+                search_query = search_query.filter(
+                    models.Danarbu.aldur >= int(search_form.aldur_fra_input.data)
+                )
+            except:
+                pass
+
+        if is_relevant(
+            search_form.aldur_til_input, search_form.show_advanced_search.data == "true"
+        ):
+            try:
+                search_query = search_query.filter(
+                    models.Danarbu.aldur <= int(search_form.aldur_til_input.data)
+                )
+            except:
+                pass
+
+        # FIXME: Fæðing - frá/til
+
+        # FIXME: Andlát - frá/til
+
         search_query = search_query.paginate(
             page, app.config["DEFAULT_ITEMS_PER_PAGE"], False
         )
@@ -222,37 +330,16 @@ def myndir():
         )
 
 
-@app.route("/soknir")
-def soknir():
-    sysla_heiti = request.args.get("sysla", type=str)
-    return jsonify(
-        [
-            sokn
-            for sokn, in db.session.query(models.Danarbu.sokn_heiti)
-            .filter(models.Danarbu.sysla_heiti == sysla_heiti)
-            .distinct()
-            .order_by(models.Danarbu.sokn_heiti)
-            .all()
-        ]
-    )
-
-
-@app.route("/baeir")
-def baeir():
-    sysla_heiti = request.args.get("sysla", type=str)
-    sokn_heiti = request.args.get("sokn", type=str)
-    return jsonify(
-        [
-            baer
-            for baer, in db.session.query(models.Danarbu.baer_heiti)
-            .filter(
-                and_(
-                    models.Danarbu.sysla_heiti == sysla_heiti,
-                    models.Danarbu.sokn_heiti == sokn_heiti,
-                )
-            )
-            .distinct()
-            .order_by(models.Danarbu.baer_heiti)
-            .all()
-        ]
-    )
+@app.route("/stada")
+def stada():
+    prefix = request.args.get("q", type=str, default="")
+    stodur = [
+        stada
+        for stada, in db.session.query(models.Danarbu.stada)
+        .filter(models.Danarbu.stada != "")
+        .filter(models.Danarbu.stada.like("%{}%".format(prefix)))
+        .distinct()
+        .order_by(models.Danarbu.stada)
+        .all()
+    ]
+    return jsonify(stodur)
