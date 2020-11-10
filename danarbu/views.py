@@ -211,9 +211,51 @@ def root():
             except:
                 pass
 
-        # FIXME: Fæðing - frá/til
+        if is_relevant(
+            search_form.faeding_fra_input,
+            search_form.show_advanced_search.data == "true",
+        ):
+            try:
+                search_query = search_query.filter(
+                    models.Danarbu.faeding_leit
+                    >= int(search_form.faeding_fra_input.data)
+                )
+            except:
+                pass
 
-        # FIXME: Andlát - frá/til
+        if is_relevant(
+            search_form.faeding_til_input,
+            search_form.show_advanced_search.data == "true",
+        ):
+            try:
+                search_query = search_query.filter(
+                    models.Danarbu.faeding_leit
+                    <= int(search_form.faeding_til_input.data)
+                )
+            except:
+                pass
+
+        if is_relevant(
+            search_form.andlat_fra_input,
+            search_form.show_advanced_search.data == "true",
+        ):
+            try:
+                search_query = search_query.filter(
+                    models.Danarbu.andlat_leit >= int(search_form.andlat_fra_input.data)
+                )
+            except:
+                pass
+
+        if is_relevant(
+            search_form.andlat_til_input,
+            search_form.show_advanced_search.data == "true",
+        ):
+            try:
+                search_query = search_query.filter(
+                    models.Danarbu.andlat_leit <= int(search_form.andlat_til_input.data)
+                )
+            except:
+                pass
 
         search_query = search_query.paginate(
             page, app.config["DEFAULT_ITEMS_PER_PAGE"], False

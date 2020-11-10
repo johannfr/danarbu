@@ -58,7 +58,7 @@ Tilvist = enum.Enum(
 
 
 class Danarbu(db.Model):
-    __tablename__ = "tbl_danarbu"
+    __tablename__ = "danarbu_leit"
     id = db.Column(db.Integer, primary_key=True)
     nafn = db.Column(db.String(100))
     stada = db.Column(db.String(200))
@@ -82,6 +82,8 @@ class Danarbu(db.Model):
     skiptabok = db.Column(db.Enum(Tilvist))
     uppskrift = db.Column(db.Enum(Tilvist))
     athugasemdir = db.Column(db.String(5000))
+    faeding_leit = db.Column(db.Integer)
+    andlat_leit = db.Column(db.Integer)
 
     def __repr__(self):
         return "<Danarbu {}: {}>".format(self.id, self.nafn)
