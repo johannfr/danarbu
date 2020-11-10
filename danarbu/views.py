@@ -1,6 +1,7 @@
 from flask import render_template, request, abort, jsonify
 from flask_paginate import Pagination, get_page_parameter
 from sqlalchemy import desc, and_
+from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
 import json
 from hashlib import sha1
@@ -25,14 +26,18 @@ def generate_hash():
 @app.route("/<request_hash>", methods=["GET", "POST"])
 def root(request_hash=None):
     while True:
-        new_hash = generate_hash()
         try:
+            new_hash = generate_hash()
             tinyurl = models.Tinyurl(hashtime=new_hash, obj="", visited=0)
             db.session.add(tinyurl)
             db.session.commit()
             break
-        except:
+        except IntegrityError:
             continue
+        except InvalidRequestError:
+            continue
+        except Exception as e:
+            abort(500, e)
 
     execute_search = False
 
@@ -318,10 +323,15 @@ def root(request_hash=None):
             search_results=results,
             pagination=pagination,
             post_hash=new_hash,
+            leit_active="active",
         )
     else:
         return render_template(
-            "index.html", search_form=search_form, syslur=syslur, post_hash=new_hash
+            "index.html",
+            search_form=search_form,
+            syslur=syslur,
+            post_hash=new_hash,
+            leit_active="active",
         )
 
 
@@ -422,3 +432,33 @@ def stada():
         .all()
     ]
     return jsonify(stodur)
+
+
+@app.route("/um")
+def um():
+    results = (
+        db.session.query(models.UmVefinn).order_by(models.UmVefinn.id.desc()).first()
+    )
+    return render_template(
+        "static.html", static_html=results.texti, um_vefinn_active="active"
+    )
+
+
+@app.route("/itarefni")
+def itarefni():
+    results = (
+        db.session.query(models.Itarefni).order_by(models.Itarefni.id.desc()).first()
+    )
+
+    return render_template(
+        "static.html", static_html=results.texti, itarefni_active="active"
+    )
+
+
+@app.route("/hjalp")
+def hjalp():
+    results = db.session.query(models.Hjalp).order_by(models.Hjalp.id.desc()).first()
+
+    return render_template(
+        "static.html", static_html=results.texti, hjalp_active="active"
+    )

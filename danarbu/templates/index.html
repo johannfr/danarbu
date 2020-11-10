@@ -6,6 +6,49 @@
     body {
         padding-top: 7em;
     }
+    a {
+    color:#951a23;
+    text-decoration:none
+    }
+    a:hover,
+    a:focus {
+    color:#951a23;
+    text-decoration:underline
+    }
+    a:focus {
+    outline:thin dotted;
+    outline:5px auto -webkit-focus-ring-color;
+    outline-offset:-2px
+    }
+
+    .btn-primary {
+        background-color: #951a23;
+        border-color: #951a23;
+    }
+    .btn-primary:hover {
+        background-color: #c62f2e;
+        border-color: #c62f2e;
+    }
+    .btn-primary:active {
+        background-color: #951a23 !important;
+        border-color: #951a23 !important;
+    }
+
+    .page-link,.page-link:hover {
+        color: #951a23;
+    }
+
+    .page-item.active {
+
+        background-color: #951a23;
+        border-color: #951a23;
+    }
+
+    .page-item.active .page-link {
+    color: #fff;
+    background-color: #951a23;
+    border-color: #951a23;
+    }
 
     .danarbuSpacer {
         margin-top: 1em;
@@ -27,13 +70,24 @@
     .small-number {
         width: 4em;
     }
+    .ti-logo {
+        height: 3em;
+    }
     </style>
 {% endblock %}
 {% block title %}Dánarbú - 18. og 19. öld{% endblock %}
 
 {% block navbar %}
-<nav class="navbar fixed-top navbar-dark bg-dark" role="navigation">
-    <a class="navbar-brand" href="/">Dánarbú - 18. og 19. öld</a>
+<nav class="navbar navbar-expand-lg fixed-top navbar-light bg-light" role="navigation">
+    <a class="navbar-brand" href="/">
+    <img src="/static/img/ti-logo.svg" class="d-inline-block ti-logo mr-3" />
+    Dánarbú - 18. og 19. öld</a>
+    <div class="navbar-nav ml-auto mr-5">
+        <a href="/" class="nav-item nav-link {{leit_active}}">Leit</a>
+        <a href="/um" class="nav-item nav-link {{um_vefinn_active}}">Um vefinn</a>
+        <a href="/itarefni" class="nav-item nav-link {{itarefni_active}}">Itarefni</a>
+        <a href="/hjalp" class="nav-item nav-link {{hjalp_active}}">Hjalp</a>
+    </div>
 </nav>
 {% endblock %}
 
