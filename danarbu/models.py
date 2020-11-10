@@ -125,3 +125,10 @@ class UmVefinn(db.Model):
     __tablename__ = "tbl_umvefinn"
     id = db.Column(db.Integer, primary_key=True)
     texti = db.Column(db.String(5000))
+
+
+class Tinyurl(db.Model):
+    __tablename__ = "tinyurl"
+    hashtime = db.Column(db.String(10), primary_key=True)
+    obj = db.Column(db.String)
+    visited = db.Column(db.Integer)

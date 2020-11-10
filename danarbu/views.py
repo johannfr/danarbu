@@ -1,6 +1,11 @@
-from flask import render_template, request, jsonify
+from flask import render_template, request, abort, jsonify
 from flask_paginate import Pagination, get_page_parameter
 from sqlalchemy import desc, and_
+
+import json
+from hashlib import sha1
+from time import time
+from werkzeug.datastructures import ImmutableMultiDict
 
 from danarbu import app, db, models
 from danarbu.forms import SearchForm
@@ -12,9 +17,41 @@ def is_relevant(field, enabled=True):
     return False
 
 
-@app.route("/", methods=["GET"])
-def root():
-    search_form = SearchForm(request.args)
+def generate_hash():
+    return sha1(bytes("{}".format(time()), "utf-8")).hexdigest()[:10]
+
+
+@app.route("/", methods=["GET", "POST"])
+@app.route("/<request_hash>", methods=["GET", "POST"])
+def root(request_hash=None):
+    while True:
+        new_hash = generate_hash()
+        try:
+            tinyurl = models.Tinyurl(hashtime=new_hash, obj="", visited=0)
+            db.session.add(tinyurl)
+            db.session.commit()
+            break
+        except:
+            continue
+
+    execute_search = False
+
+    if request.method == "POST":
+        tinyurl = db.session.query(models.Tinyurl).get(request_hash)
+        tinyurl.obj = json.dumps(request.form)
+        db.session.commit()
+        execute_search = True
+    elif request.method == "GET" and request_hash is not None:
+        tinyurl = db.session.query(models.Tinyurl).get(request_hash)
+        try:
+            request.form = ImmutableMultiDict(json.loads(tinyurl.obj))
+            tinyurl.visited = tinyurl.visited + 1
+            db.session.commit()
+        except:
+            abort(404)
+        execute_search = True
+
+    search_form = SearchForm(request.form)
 
     syslur = [("", "")]
     soknir = [("", "")]
@@ -60,7 +97,7 @@ def root():
     search_form.sokn_select.choices = soknir
     search_form.baer_select.choices = baeir
 
-    if search_form.validate() and request.args:
+    if execute_search:
         page = request.args.get(get_page_parameter(), type=int, default=1)
 
         fulltext_columns = [
@@ -280,9 +317,12 @@ def root():
             else "",
             search_results=results,
             pagination=pagination,
+            post_hash=new_hash,
         )
     else:
-        return render_template("index.html", search_form=search_form, syslur=syslur)
+        return render_template(
+            "index.html", search_form=search_form, syslur=syslur, post_hash=new_hash
+        )
 
 
 def parse_date(date):
