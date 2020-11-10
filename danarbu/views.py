@@ -344,11 +344,6 @@ def faersla():
     )
 
 
-@app.route("/itarleit")
-def itarleit():
-    return "Það er engin ítarleit ennþá."
-
-
 @app.route("/myndir")
 def myndir():
     heimild_id = request.args.get("id", type=int, default=1)
