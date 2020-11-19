@@ -1,9 +1,12 @@
 from danarbu import db
 import enum
 
+from sqlalchemy.sql import func
 from sqlalchemy.ext.compiler import compiles
+from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.sql.expression import ClauseElement, ColumnElement
-from sqlalchemy import literal
+from sqlalchemy import literal, cast, Numeric
+from sqlalchemy_utils import aggregated
 
 
 class Match(ClauseElement):
@@ -58,7 +61,7 @@ Tilvist = enum.Enum(
 
 
 class Danarbu(db.Model):
-    __tablename__ = "danarbu_leit"
+    __tablename__ = "tbl_danarbu"
     id = db.Column(db.Integer, primary_key=True)
     nafn = db.Column(db.String(100))
     stada = db.Column(db.String(200))
@@ -82,8 +85,14 @@ class Danarbu(db.Model):
     skiptabok = db.Column(db.Enum(Tilvist))
     uppskrift = db.Column(db.Enum(Tilvist))
     athugasemdir = db.Column(db.String(5000))
-    faeding_leit = db.Column(db.Integer)
-    andlat_leit = db.Column(db.Integer)
+
+    @hybrid_property
+    def andlat_leit(self):
+        return func.nullif(cast(func.right(self.andlat, 4), Numeric(4, 0)), 0)
+
+    @hybrid_property
+    def faeding_leit(self):
+        return func.nullif(cast(func.right(self.faeding, 4), Numeric(4, 0)), 0)
 
     def __repr__(self):
         return "<Danarbu {}: {}>".format(self.id, self.nafn)

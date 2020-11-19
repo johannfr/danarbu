@@ -2,10 +2,7 @@
 {% block html_attribs %} lang="is"{% endblock %}
 {% block styles %}
 {{super()}}
-    <style type="text/css">
-    body {
-        padding-top: 7em;
-    }
+<style type="text/css">
     a {
     color:#951a23;
     text-decoration:none
@@ -70,51 +67,72 @@
     .small-number {
         width: 4em;
     }
-    .ti-logo {
-        height: 3em;
+    #ti-logo {
+        width: 4em;
+        height: 3.1em;
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-image: url(/static/img/ti-logo.svg);
     }
-    </style>
+    @media (min-width: 800px) {
+        #ti-logo {
+            width: 14em;
+        }
+    }
+
+
+</style>
 {% endblock %}
 {% block title %}Dánarbú - 18. og 19. öld{% endblock %}
 
 {% block navbar %}
-<nav class="navbar navbar-expand-lg fixed-top navbar-light bg-light" role="navigation">
+<nav class="navbar sticky-top navbar-expand-lg container navbar-light bg-light">
     <a class="navbar-brand" href="/">
-    <img src="/static/img/ti-logo.svg" class="d-inline-block ti-logo mr-3" />
-    Dánarbú - 18. og 19. öld</a>
-    <div class="navbar-nav ml-auto mr-5">
-        <a href="/" class="nav-item nav-link {{leit_active}}">Leit</a>
-        <a href="/um" class="nav-item nav-link {{um_vefinn_active}}">Um vefinn</a>
-        <a href="/itarefni" class="nav-item nav-link {{itarefni_active}}">Ítarefni</a>
-        <a href="/hjalp" class="nav-item nav-link {{hjalp_active}}">Hjálp</a>
+        <div id="ti-logo" class="d-inline-block"></div>
+        Dánarbú - 18. og 19. öld
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Opna leiðarkerfi">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a href="/" class="nav-link {{leit_active}}">Leit</a>
+            </li>
+            <li class="nav-item">
+                <a href="/um" class="nav-link {{um_vefinn_active}}">Um vefinn</a>
+            </li>
+            <li class="nav-item">
+                <a href="/itarefni" class="nav-link {{itarefni_active}}">Ítarefni</a>
+            </li>
+            <li class="nav-item">
+                <a href="/hjalp" class="nav-link {{hjalp_active}}">Hjálp</a>
+            </li>
+        </ul>
     </div>
 </nav>
 {% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container mt-3">
     <form method="POST" action="/{{post_hash}}" id="search_form">
         {{search_form.hidden_tag()}}
         <div class="input-group mb-3">
             <div class="input-group-prepend">
                 <span class="input-group-text" id="basic-addon1">{{ search_form.search_string.label.text}}:</span>
             </div>
-                {{search_form.search_string(placeholder="Sláðu inn leitarstreng", class="form-control")}}
+                {{search_form.search_string(placeholder="Nafn, Staða, Sýsla, Sókn", class="form-control")}}
             <div class="input-group-append">
                 <button class="btn btn-primary" type="submit">
                     <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-search" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-  <path fill-rule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z"/>
-  <path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z"/>
-</svg>
+                        <path fill-rule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z"/>
+                        <path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z"/>
+                    </svg>
                 </button>
             </div>
         </div>
-    <a class="btn btn-secondary" data-toggle="collapse" href="#itarleit" role="button" aria-expanded="true" aria-controls="itarleit">Ítarleg leit</a>
-        <div class="collapse {{show_advanced_search}}" id="itarleit">
+        <div id="itarleit">
             <div class="card">
-                <div class="card-header small">
-                Hér eru ýmsir möguleikar til að þrengja leitarniðurstöður, til viðbótar við leitarstrenginn að ofan.
-                </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-4">

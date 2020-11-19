@@ -25,7 +25,7 @@ def generate_hash():
 @app.route("/", methods=["GET", "POST"])
 @app.route("/<request_hash>", methods=["GET", "POST"])
 def root(request_hash=None):
-    while True:
+    for i in range(11):
         try:
             new_hash = generate_hash()
             tinyurl = models.Tinyurl(hashtime=new_hash, obj="", visited=0)
@@ -38,6 +38,8 @@ def root(request_hash=None):
             continue
         except Exception as e:
             abort(500, e)
+        if i == 10;
+            abort(500)
 
     execute_search = False
 
@@ -213,7 +215,7 @@ def root(request_hash=None):
             search_form.nafn_input, search_form.show_advanced_search.data == "true"
         ):
             search_query = search_query.filter(
-                models.Danarbu.nafn.like(search_form.nafn_input.data)
+                models.Danarbu.nafn.like("%{}%".format(search_form.nafn_input.data))
             )
 
         if is_relevant(
@@ -299,6 +301,7 @@ def root(request_hash=None):
             except:
                 pass
 
+        print(search_query)
         search_query = search_query.paginate(
             page, app.config["DEFAULT_ITEMS_PER_PAGE"], False
         )
@@ -310,7 +313,10 @@ def root(request_hash=None):
             alignment="center",
         )
         if len(search_form.search_string.data) > 0:
-            results = [result for result, score in search_query.items]
+            results = []
+            for result, score in search_query.items:
+                result.score = score
+                results.append(result)
         else:
             results = search_query.items
 
@@ -352,7 +358,7 @@ def parse_date(date):
             11: "nóvember",
             12: "desember",
         }
-        return "{}. {}, {}".format(dagur, manudur_nofn[int(manudur)], ar)
+        return "{}. {} {}".format(dagur, manudur_nofn[int(manudur)], ar)
     except ValueError:
         pass
     try:
@@ -372,25 +378,29 @@ def faersla():
     dags["skraning"] = parse_date(danarbu.skraning)
     dags["uppbod"] = parse_date(danarbu.uppbod)
     dags["skipti"] = parse_date(danarbu.skipti)
-    danarbu.heimildir = []
-    for heimild in db.session.query(models.Heimildir).filter(
+    heimildir = []
+    for db_heimild in db.session.query(models.Heimildir).filter(
         models.Heimildir.danarbu == danarbu.id
     ):
-        if heimild.endanleg and len(heimild.endanleg) > 0:
-            heimild_tengill = "http://skjalaskrar.skjalasafn.is/b/" + heimild.endanleg
+        heimild = dict(db_heimild.__dict__)
+        if db_heimild.endanleg and len(db_heimild.endanleg) > 0:
+            heimild["tengill"] = (
+                "http://skjalaskrar.skjalasafn.is/b/" + db_heimild.endanleg
+            )
         else:
-            heimild_tengill = "http://skjalaskrar.skjalasafn.is/b/" + heimild.upprunaleg
-        heimild.myndir = []
+            heimild["tengill"] = None
+
+        heimild["myndir"] = []
         for mynd in (
             db.session.query(models.Myndir)
-            .filter(models.Myndir.heimild == heimild.id)
+            .filter(models.Myndir.heimild == db_heimild.id)
             .order_by(models.Myndir.id)
         ):
-            heimild.myndir.append(mynd)
-        danarbu.heimildir.append(heimild)
+            heimild["myndir"].append(mynd)
+        heimildir.append(heimild)
 
     return render_template(
-        "faersla.html", danarbu=danarbu, dags=dags, heimild_tengill=heimild_tengill
+        "faersla.html", danarbu=danarbu, dags=dags, heimildir=heimildir
     )
 
 
