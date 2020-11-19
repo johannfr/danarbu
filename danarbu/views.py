@@ -38,7 +38,7 @@ def root(request_hash=None):
             continue
         except Exception as e:
             abort(500, e)
-        if i == 10;
+        if i == 10:
             abort(500)
 
     execute_search = False
