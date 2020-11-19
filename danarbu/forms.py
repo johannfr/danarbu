@@ -7,7 +7,6 @@ class SearchForm(FlaskForm):
     class Meta:
         csrf = False
 
-    show_advanced_search = HiddenField(default="true")
     search_string = StringField("Leit", [optional()])
     sysla_select = SelectField("Sýsla", [optional()])
     sokn_select = SelectField("Sókn", [optional()])

@@ -14,8 +14,8 @@ from danarbu import app, db, models
 from danarbu.forms import SearchForm
 
 
-def is_relevant(field, enabled=True):
-    if enabled and field.data != None and len(field.data) > 0:
+def is_relevant(field):
+    if field.data != None and len(field.data) > 0:
         return True
     return False
 
@@ -150,30 +150,22 @@ def root(request_hash=None):
                 models.Danarbu.artal, models.Danarbu.nafn
             )
 
-        if is_relevant(
-            search_form.sysla_select, search_form.show_advanced_search.data == "true"
-        ):
+        if is_relevant(search_form.sysla_select):
             search_query = search_query.filter(
                 models.Danarbu.sysla_heiti == search_form.sysla_select.data
             )
 
-        if is_relevant(
-            search_form.sokn_select, search_form.show_advanced_search.data == "true"
-        ):
+        if is_relevant(search_form.sokn_select):
             search_query = search_query.filter(
                 models.Danarbu.sokn_heiti == search_form.sokn_select.data
             )
 
-        if is_relevant(
-            search_form.baer_select, search_form.show_advanced_search.data == "true"
-        ):
+        if is_relevant(search_form.baer_select):
             search_query = search_query.filter(
                 models.Danarbu.baer_heiti == search_form.baer_select.data
             )
 
-        if is_relevant(
-            search_form.tegund_select, search_form.show_advanced_search.data == "true"
-        ):
+        if is_relevant(search_form.tegund_select):
             if search_form.tegund_select.data == "danarbu":
                 search_query = search_query.filter(
                     models.Danarbu.danarbu == models.Tilvist.til
@@ -191,9 +183,7 @@ def root(request_hash=None):
                     models.Danarbu.uppskrift == models.Tilvist.til
                 )
 
-        if is_relevant(
-            search_form.ar_fra_input, search_form.show_advanced_search.data == "true"
-        ):
+        if is_relevant(search_form.ar_fra_input):
             try:
                 search_query = search_query.filter(
                     models.Danarbu.artal >= int(search_form.ar_fra_input.data)
@@ -201,9 +191,7 @@ def root(request_hash=None):
             except:
                 pass
 
-        if is_relevant(
-            search_form.ar_til_input, search_form.show_advanced_search.data == "true"
-        ):
+        if is_relevant(search_form.ar_til_input):
             try:
                 search_query = search_query.filter(
                     models.Danarbu.artal <= int(search_form.ar_til_input.data)
@@ -211,9 +199,7 @@ def root(request_hash=None):
             except:
                 pass
 
-        if is_relevant(
-            search_form.mat_fra_input, search_form.show_advanced_search.data == "true"
-        ):
+        if is_relevant(search_form.mat_fra_input):
             try:
                 search_query = search_query.filter(
                     models.Danarbu.mat >= int(search_form.mat_fra_input.data)
@@ -221,9 +207,7 @@ def root(request_hash=None):
             except:
                 pass
 
-        if is_relevant(
-            search_form.mat_til_input, search_form.show_advanced_search.data == "true"
-        ):
+        if is_relevant(search_form.mat_til_input):
             try:
                 search_query = search_query.filter(
                     models.Danarbu.mat <= int(search_form.mat_til_input.data)
@@ -231,23 +215,17 @@ def root(request_hash=None):
             except:
                 pass
 
-        if is_relevant(
-            search_form.nafn_input, search_form.show_advanced_search.data == "true"
-        ):
+        if is_relevant(search_form.nafn_input):
             search_query = search_query.filter(
                 models.Danarbu.nafn.like("%{}%".format(search_form.nafn_input.data))
             )
 
-        if is_relevant(
-            search_form.stada_input, search_form.show_advanced_search.data == "true"
-        ):
+        if is_relevant(search_form.stada_input):
             search_query = search_query.filter(
                 models.Danarbu.stada.like(search_form.stada_input.data)
             )
 
-        if is_relevant(
-            search_form.kyn_select, search_form.show_advanced_search.data == "true"
-        ):
+        if is_relevant(search_form.kyn_select):
             try:
                 search_query = search_query.filter(
                     models.Danarbu.kyn == int(search_form.kyn_select.data)
@@ -255,9 +233,7 @@ def root(request_hash=None):
             except:
                 pass
 
-        if is_relevant(
-            search_form.aldur_fra_input, search_form.show_advanced_search.data == "true"
-        ):
+        if is_relevant(search_form.aldur_fra_input):
             try:
                 search_query = search_query.filter(
                     models.Danarbu.aldur >= int(search_form.aldur_fra_input.data)
@@ -265,9 +241,7 @@ def root(request_hash=None):
             except:
                 pass
 
-        if is_relevant(
-            search_form.aldur_til_input, search_form.show_advanced_search.data == "true"
-        ):
+        if is_relevant(search_form.aldur_til_input):
             try:
                 search_query = search_query.filter(
                     models.Danarbu.aldur <= int(search_form.aldur_til_input.data)
@@ -275,10 +249,7 @@ def root(request_hash=None):
             except:
                 pass
 
-        if is_relevant(
-            search_form.faeding_fra_input,
-            search_form.show_advanced_search.data == "true",
-        ):
+        if is_relevant(search_form.faeding_fra_input):
             try:
                 search_query = search_query.filter(
                     models.Danarbu.faeding_leit
@@ -287,10 +258,7 @@ def root(request_hash=None):
             except:
                 pass
 
-        if is_relevant(
-            search_form.faeding_til_input,
-            search_form.show_advanced_search.data == "true",
-        ):
+        if is_relevant(search_form.faeding_til_input):
             try:
                 search_query = search_query.filter(
                     models.Danarbu.faeding_leit
@@ -299,10 +267,7 @@ def root(request_hash=None):
             except:
                 pass
 
-        if is_relevant(
-            search_form.andlat_fra_input,
-            search_form.show_advanced_search.data == "true",
-        ):
+        if is_relevant(search_form.andlat_fra_input):
             try:
                 search_query = search_query.filter(
                     models.Danarbu.andlat_leit >= int(search_form.andlat_fra_input.data)
@@ -310,10 +275,7 @@ def root(request_hash=None):
             except:
                 pass
 
-        if is_relevant(
-            search_form.andlat_til_input,
-            search_form.show_advanced_search.data == "true",
-        ):
+        if is_relevant(search_form.andlat_til_input):
             try:
                 search_query = search_query.filter(
                     models.Danarbu.andlat_leit <= int(search_form.andlat_til_input.data)
@@ -321,15 +283,11 @@ def root(request_hash=None):
             except:
                 pass
 
-        print(
-            str(search_query).replace(
-                "%s", '"{}"'.format(search_form.search_string.data)
-            )
-        )
         search_query = search_query.paginate(
             page, app.config["DEFAULT_ITEMS_PER_PAGE"], False
         )
         pagination = Pagination(
+            display_msg="Niðurstöður <b>{start}</b> til <b>{end}</b> af <b>{total}</b>",
             page=page,
             total=search_query.total,
             per_page=app.config["DEFAULT_ITEMS_PER_PAGE"],
@@ -344,9 +302,6 @@ def root(request_hash=None):
         return render_template(
             "nidurstodur.html",
             search_form=search_form,
-            show_advanced_search="show"
-            if search_form.show_advanced_search.data == "true"
-            else "",
             search_results=results,
             pagination=pagination,
             post_hash=new_hash,

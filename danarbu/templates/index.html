@@ -67,6 +67,12 @@
     .small-number {
         width: 4em;
     }
+    .pagination-page-info {
+        font-size: small;
+    }
+    .pagination-page-info b {
+        color: #951a23;
+    }
     #ti-logo {
         width: 4em;
         height: 3.1em;
@@ -287,14 +293,6 @@ $(document).ready(function() {
                 $("#resultBody").html(result);
             }
         });
-    });
-
-    $("#itarleit").on("shown.bs.collapse", function() {
-        $("#show_advanced_search").val("true");
-    });
-
-    $("#itarleit").on("hidden.bs.collapse", function() {
-        $("#show_advanced_search").val("false");
     });
 
     $("#sysla_select").on("change", function (e) {
