@@ -1,9 +1,11 @@
 from flask import render_template, request, abort, jsonify
 from flask_paginate import Pagination, get_page_parameter
 from sqlalchemy import desc, and_
+from sqlalchemy.sql import null
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
 import json
+import datetime
 from hashlib import sha1
 from time import time
 from werkzeug.datastructures import ImmutableMultiDict
@@ -19,16 +21,15 @@ def is_relevant(field, enabled=True):
 
 
 def generate_hash():
-    return sha1(bytes("{}".format(time()), "utf-8")).hexdigest()[:10]
-
-
-@app.route("/", methods=["GET", "POST"])
-@app.route("/<request_hash>", methods=["GET", "POST"])
-def root(request_hash=None):
     for i in range(11):
         try:
-            new_hash = generate_hash()
-            tinyurl = models.Tinyurl(hashtime=new_hash, obj="", visited=0)
+            new_hash = sha1(bytes("{}".format(time()), "utf-8")).hexdigest()[:10]
+            tinyurl = models.Tinyurl(
+                hashtime=new_hash,
+                obj="",
+                visited=0,
+                visited_at=datetime.datetime.utcnow(),
+            )
             db.session.add(tinyurl)
             db.session.commit()
             break
@@ -37,10 +38,20 @@ def root(request_hash=None):
         except InvalidRequestError:
             continue
         except Exception as e:
-            abort(500, e)
-        if i == 10:
-            abort(500)
+            new_hash = "ekkiVistad"
+            break
 
+        if i == 10:
+            new_hash = "ekkiVistad"
+            break
+
+    return new_hash
+
+
+@app.route("/", methods=["GET", "POST"])
+@app.route("/<request_hash>", methods=["GET", "POST"])
+def root(request_hash=None):
+    new_hash = generate_hash()
     execute_search = False
 
     if request.method == "POST":
@@ -53,10 +64,19 @@ def root(request_hash=None):
         try:
             request.form = ImmutableMultiDict(json.loads(tinyurl.obj))
             tinyurl.visited = tinyurl.visited + 1
+            tinyurl.visited_at = datetime.datetime.utcnow()
             db.session.commit()
         except:
             abort(404)
         execute_search = True
+
+    # Clean old non-visited entries from the tinyurl table.
+    current_time = datetime.datetime.utcnow()
+    tinyurl_delete = current_time - datetime.timedelta(weeks=30)
+    db.session.query(models.Tinyurl).filter(
+        models.Tinyurl.visited_at < tinyurl_delete
+    ).filter(models.Tinyurl.visited <= 1).delete()
+    db.session.commit()
 
     search_form = SearchForm(request.form)
 
@@ -123,7 +143,7 @@ def root(request_hash=None):
                     ).label("score"),
                 )
                 .filter(models.Match(fulltext_columns, search_form.search_string.data))
-                .order_by(desc("score"))
+                .order_by(desc("score"), models.Danarbu.artal, models.Danarbu.nafn)
             )
         else:
             search_query = db.session.query(models.Danarbu).order_by(
@@ -301,7 +321,11 @@ def root(request_hash=None):
             except:
                 pass
 
-        print(search_query)
+        print(
+            str(search_query).replace(
+                "%s", '"{}"'.format(search_form.search_string.data)
+            )
+        )
         search_query = search_query.paginate(
             page, app.config["DEFAULT_ITEMS_PER_PAGE"], False
         )
@@ -313,10 +337,7 @@ def root(request_hash=None):
             alignment="center",
         )
         if len(search_form.search_string.data) > 0:
-            results = []
-            for result, score in search_query.items:
-                result.score = score
-                results.append(result)
+            results = [result for result, score in search_query.items]
         else:
             results = search_query.items
 

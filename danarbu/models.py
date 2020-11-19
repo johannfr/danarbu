@@ -141,3 +141,4 @@ class Tinyurl(db.Model):
     hashtime = db.Column(db.String(10), primary_key=True)
     obj = db.Column(db.String)
     visited = db.Column(db.Integer)
+    visited_at = db.Column(db.DateTime)

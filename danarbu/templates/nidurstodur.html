@@ -18,7 +18,7 @@
 
 {% for danarbu in search_results %}
         <tr>
-            <td><a href="#" data-toggle="modal" data-target="#resultModal" data-danarbu="{{danarbu.id}}" data-nafn="{{danarbu.nafn}}" data-artal="{{danarbu.artal}}">{{danarbu.nafn or "Óskráð"}}</a> [{{danarbu.score}}]</td>
+            <td><a href="#" data-toggle="modal" data-target="#resultModal" data-danarbu="{{danarbu.id}}" data-nafn="{{danarbu.nafn}}" data-artal="{{danarbu.artal}}">{{danarbu.nafn or "Óskráð"}}</a></td>
             <td>{{danarbu.artal or "Óskráð"}}</td>
             <td>{{danarbu.aldur or ""}}</td>
             <td>{{danarbu.baer_heiti or "Óskráð"}}</td>
