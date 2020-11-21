@@ -1,3 +1,5 @@
+blinker==1.4 \
+    --hash=sha256:471aee25f3992bd325afa3772f1063dbdbbca947a041b8b89466dc00d606f8b6
 click==7.1.2 \
     --hash=sha256:dacca89f4bfadd5de3d7489b7c8a566eee0d3676333fbb50030263894c38c0dc \
     --hash=sha256:d2b5255c7c6349bc1bd1e59e08cd12acbbd63ce649f2588755783aa94dfb6b1a
@@ -10,6 +12,9 @@ flask==1.1.2 \
 flask-bs4==4.5.3.0 \
     --hash=sha256:c008a3087360534d990672f70cf9d2ddbb538e0074aa31bec34ea0759f4d37a6 \
     --hash=sha256:9bf34745a92bdc1b1bfb57005c5c61b51420e8d736cc361a476be5400f69fde9
+flask-debugtoolbar==0.11.0 \
+    --hash=sha256:3c4e79d354ede014e6657c545a536d4fb273cc89e3fd6b4835b02e346dd3aab4 \
+    --hash=sha256:0e9a80d4c599233c68376e81cc99976200b5ac5248cfb24f18935cc5b69ac5b3
 flask-paginate==0.7.1 \
     --hash=sha256:949b93d0535d1223b91ac0048586bd878aaebf4044c54c1dc3068acc9bdf441f \
     --hash=sha256:f69434e9a8d85e50bd248c52bd8b22b0ca0284edef45d3c51b3ab5e4f703b733

@@ -3,6 +3,12 @@
 {% block styles %}
 {{super()}}
 <style type="text/css">
+    body {
+        color: #1a1a1a !important;
+    }
+    .table {
+        color: #1a1a1a !important;
+    }
     a {
     color:#951a23;
     text-decoration:none
@@ -277,13 +283,13 @@ $(document).ready(function() {
         }
     });
 
-    $("#resultModal").on("show.bs.modal", function (e) {
-        var button = $(e.relatedTarget);
+    $(".danarbu_result").on("click", function (e) {
+        e.preventDefault();
+        var button = $(e.currentTarget);
         var danarbu = button.data("danarbu");
         var nafn = button.data("nafn");
         var artal = button.data("artal");
         $("#resultTitle").text(nafn + ", " + artal);
-        $("#abendingButton").attr("href", "mailto:danarbu@skjalasafn.is?subject=Ábending vegna færslu: "+danarbu);
         $.ajax({
             url: "/faersla",
             data: {
@@ -291,9 +297,22 @@ $(document).ready(function() {
             },
             success: function (result) {
                 $("#resultBody").html(result);
+                $("#resultModal").modal("show");
+                const url = new URL(window.location);
+                url.searchParams.set("danarbu", danarbu);
+                window.history.pushState({}, "", url);
+                $("#abendingButton").attr("href", "mailto:danarbu@skjalasafn.is?subject=Ábending vegna færslu: "+danarbu+"&body=Vefslóð: "+url);
             }
         });
     });
+
+    $("#resultModal").on("hide.bs.modal", function (e) {
+        window.history.back();
+    });
+
+    {% if url_danarbu_entry %}
+    $("#danarbu_result_{{url_danarbu_entry}}").click();
+    {% endif %}
 
     $("#sysla_select").on("change", function (e) {
         $("#sokn_select option:not(:first)").remove();

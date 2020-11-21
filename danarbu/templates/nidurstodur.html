@@ -2,6 +2,12 @@
 
 {% block search_results %}
 
+{% if total < 1 %}
+
+Engar niðurstöður fundust.
+
+{% else %}
+
 {{pagination.info}}
 
 <table class="table">
@@ -17,9 +23,9 @@
     <thead>
     <tbody>
 
-{% for danarbu in search_results %}
+{% for danarbu, score in search_results %}
         <tr>
-            <td><a href="#" data-toggle="modal" data-target="#resultModal" data-danarbu="{{danarbu.id}}" data-nafn="{{danarbu.nafn}}" data-artal="{{danarbu.artal}}">{{danarbu.nafn or "Óskráð"}}</a></td>
+            <td><a href="#" class="danarbu_result" id="danarbu_result_{{danarbu.id}}" data-danarbu="{{danarbu.id}}" data-nafn="{{danarbu.nafn}}" data-artal="{{danarbu.artal}}">{{danarbu.nafn or "Óskráð"}}</a></td>
             <td>{{danarbu.artal or "Óskráð"}}</td>
             <td>{{danarbu.aldur or ""}}</td>
             <td>{{danarbu.baer_heiti or "Óskráð"}}</td>
@@ -55,5 +61,5 @@
 </div>
 
 {{pagination.links}}
-
+{% endif %}
 {% endblock %}

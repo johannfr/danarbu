@@ -1,7 +1,8 @@
 from flask import render_template, request, abort, jsonify
 from flask_paginate import Pagination, get_page_parameter
 from sqlalchemy import desc, and_
-from sqlalchemy.sql import null
+from sqlalchemy.sql import null, func
+from sqlalchemy.sql.expression import literal_column
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
 import json
@@ -73,9 +74,12 @@ def root(request_hash=None):
     # Clean old non-visited entries from the tinyurl table.
     current_time = datetime.datetime.utcnow()
     tinyurl_delete = current_time - datetime.timedelta(weeks=30)
-    db.session.query(models.Tinyurl).filter(
-        models.Tinyurl.visited_at < tinyurl_delete
-    ).filter(models.Tinyurl.visited <= 1).delete()
+    clean_tinyurl = (
+        models.Tinyurl.__table__.delete()
+        .where(models.Tinyurl.visited_at < tinyurl_delete)
+        .where(models.Tinyurl.visited <= 1)
+    )
+    db.session.execute(clean_tinyurl)
     db.session.commit()
 
     search_form = SearchForm(request.form)
@@ -126,6 +130,8 @@ def root(request_hash=None):
 
     if execute_search:
         page = request.args.get(get_page_parameter(), type=int, default=1)
+        url_danarbu_entry = request.args.get("danarbu", type=int, default=None)
+        print(url_danarbu_entry)
 
         fulltext_columns = [
             models.Danarbu.nafn,
@@ -146,9 +152,10 @@ def root(request_hash=None):
                 .order_by(desc("score"), models.Danarbu.artal, models.Danarbu.nafn)
             )
         else:
-            search_query = db.session.query(models.Danarbu).order_by(
-                models.Danarbu.artal, models.Danarbu.nafn
-            )
+            search_query = db.session.query(
+                models.Danarbu,
+                literal_column("42").label("score"),  # Placeholder for score.
+            ).order_by(models.Danarbu.artal, models.Danarbu.nafn)
 
         if is_relevant(search_form.sysla_select):
             search_query = search_query.filter(
@@ -283,29 +290,35 @@ def root(request_hash=None):
             except:
                 pass
 
-        search_query = search_query.paginate(
-            page, app.config["DEFAULT_ITEMS_PER_PAGE"], False
-        )
+        # This is a stupid workaround.
+        # Because of some DB-tuning, the ÞÍ-database hangs on sub-queries, which is what
+        # the paginate(...) function does, i.e. SELECT COUNT(*) FROM (<original query>).
+        # So instead, we're doing this manually, and in a not-so-smart way.
+        # search_query = search_query.paginate(
+        #     page, app.config["DEFAULT_ITEMS_PER_PAGE"], False
+        # )
+        per_page = app.config["DEFAULT_ITEMS_PER_PAGE"]
+        count_items = len(search_query.all())
+        items = search_query.limit(per_page).offset((page - 1) * per_page).all()
+
         pagination = Pagination(
             display_msg="Niðurstöður <b>{start}</b> til <b>{end}</b> af <b>{total}</b>",
             page=page,
-            total=search_query.total,
+            total=count_items,
             per_page=app.config["DEFAULT_ITEMS_PER_PAGE"],
             css_framework="bootstrap4",
             alignment="center",
         )
-        if len(search_form.search_string.data) > 0:
-            results = [result for result, score in search_query.items]
-        else:
-            results = search_query.items
 
         return render_template(
             "nidurstodur.html",
             search_form=search_form,
-            search_results=results,
+            search_results=items,
             pagination=pagination,
             post_hash=new_hash,
             leit_active="active",
+            total=count_items,
+            url_danarbu_entry=url_danarbu_entry,
         )
     else:
         return render_template(
