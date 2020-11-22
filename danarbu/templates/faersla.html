@@ -14,13 +14,6 @@
                         <div class="row">
                             <div class="form-check">
                                 <div class="col">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="form-check">
-                                <div class="col">
 
                                     {% if danarbu.lifandi %}
                                     <div class="row">
@@ -89,7 +82,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="row">
+                <div class="row detailsRow">
                     <div class="col"><b>Heimildir:</b>
                         {% for heimild in heimildir %}
                             <div class="row pl-2">
@@ -121,10 +114,15 @@
                         {% endfor %}
                     </div>
                 </div>
-                {#
-                <div class="row detailsRow">
-                    <div class="col"><b>Athugasemdir:</b><p>{{danarbu.athugasemdir}}</p></div>
+                {% if danarbu.athugasemdir %}
+                <div class="row">
+                    <div class="col">
+                        <a href="#" data-toggle="collapse" data-target="#athugasemdirCollapse">Athugasemdir</a>
+                        <div class="collapse" id="athugasemdirCollapse">
+                            {{danarbu.athugasemdir}}
+                        </div>
+                    </div>
                 </div>
-                #}
+                {% endif %}
 
             </div>

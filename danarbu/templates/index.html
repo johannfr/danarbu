@@ -267,6 +267,9 @@
                     </div>
                     <div class="row mt-3">
                         <div class="col form-inline">
+                            <div class="input-group input-group-sm">
+                                <input type="reset" class="btn btn-secondary" id="search_form_reset" value="Hreinsa" />
+                            </div>
                             <div class="input-group input-group-sm ml-auto">
                                 <div class="input-group-prepend">
                                 {{search_form.items_per_page_select.label(class="input-group-text")}}
@@ -405,7 +408,7 @@ $(document).ready(function() {
                 e.stopPropagation();
                 $("#mat_fra_input")[0].setCustomValidity("Frá hærra en til.");
                 $("#mat_til_input")[0].setCustomValidity("Frá hærra en til.");
-            } 
+            }
 
 
             if (
@@ -433,6 +436,10 @@ $(document).ready(function() {
             form.classList.add("was-validated");
 
         });
+    });
+
+    $("#search_form_reset").on("click", function (e) {
+        $(".custom-select").val('').change();
     });
 
 });
