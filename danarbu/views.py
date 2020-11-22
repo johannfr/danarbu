@@ -16,7 +16,7 @@ from danarbu.forms import SearchForm
 
 
 def is_relevant(field):
-    if field.data != None and len(field.data) > 0:
+    if field.data != None and len(str(field.data)) > 0:
         return True
     return False
 
@@ -96,37 +96,42 @@ def root(request_hash=None):
         syslur.append((sysla, sysla))
     search_form.sysla_select.choices = syslur
 
-    search_form.sokn_select.render_kw = {"disabled": True}
+    # Sokn
+    sokn_query = (
+        db.session.query(models.Danarbu.sokn_heiti)
+        .distinct()
+        .order_by(models.Danarbu.sokn_heiti)
+    )
     if is_relevant(search_form.sysla_select):
-        for (sokn,) in (
-            db.session.query(models.Danarbu.sokn_heiti)
-            .filter(models.Danarbu.sysla_heiti == search_form.sysla_select.data)
-            .distinct()
-            .order_by(models.Danarbu.sokn_heiti)
-            .all()
-        ):
-            soknir.append((sokn, sokn))
-        search_form.sokn_select.render_kw = {"disabled": False}
+        sokn_query = sokn_query.filter(
+            models.Danarbu.sysla_heiti == search_form.sysla_select.data
+        )
 
-    search_form.baer_select.render_kw = {"disabled": True}
-    if is_relevant(search_form.sokn_select):
-        for (baer,) in (
-            db.session.query(models.Danarbu.baer_heiti)
-            .filter(
-                and_(
-                    models.Danarbu.sysla_heiti == search_form.sysla_select.data,
-                    models.Danarbu.sokn_heiti == search_form.sokn_select.data,
-                )
-            )
-            .distinct()
-            .order_by(models.Danarbu.baer_heiti)
-            .all()
-        ):
-            baeir.append((baer, baer))
-        search_form.baer_select.render_kw = {"disabled": False}
+    for (sokn,) in sokn_query.all():
+        soknir.append((sokn, sokn))
 
     search_form.sokn_select.choices = soknir
+
+    # Baer
+    baer_query = (
+        db.session.query(models.Danarbu.baer_heiti)
+        .distinct()
+        .order_by(models.Danarbu.baer_heiti)
+    )
+    if is_relevant(search_form.sysla_select):
+        baer_query = baer_query.filter(
+            models.Danarbu.sysla_heiti == search_form.sysla_select.data
+        )
+    if is_relevant(search_form.sokn_select):
+        baer_query = baer_query.filter(
+            models.Danarbu.sokn_heiti == search_form.sokn_select.data
+        )
+
+    for (baer,) in baer_query.all():
+        baeir.append((baer, baer))
     search_form.baer_select.choices = baeir
+
+    # search_form.baer_select.render_kw = {"disabled": False}
 
     if execute_search:
         page = request.args.get(get_page_parameter(), type=int, default=1)
@@ -149,13 +154,20 @@ def root(request_hash=None):
                     ).label("score"),
                 )
                 .filter(models.Match(fulltext_columns, search_form.search_string.data))
-                .order_by(desc("score"), models.Danarbu.artal, models.Danarbu.nafn)
+                .order_by(
+                    desc("score"),
+                    models.Danarbu.sysla_heiti,
+                    models.Danarbu.artal,
+                    models.Danarbu.nafn,
+                )
             )
         else:
             search_query = db.session.query(
                 models.Danarbu,
                 literal_column("42").label("score"),  # Placeholder for score.
-            ).order_by(models.Danarbu.artal, models.Danarbu.nafn)
+            ).order_by(
+                models.Danarbu.sysla_heiti, models.Danarbu.artal, models.Danarbu.nafn
+            )
 
         if is_relevant(search_form.sysla_select):
             search_query = search_query.filter(
@@ -274,22 +286,6 @@ def root(request_hash=None):
             except:
                 pass
 
-        if is_relevant(search_form.andlat_fra_input):
-            try:
-                search_query = search_query.filter(
-                    models.Danarbu.andlat_leit >= int(search_form.andlat_fra_input.data)
-                )
-            except:
-                pass
-
-        if is_relevant(search_form.andlat_til_input):
-            try:
-                search_query = search_query.filter(
-                    models.Danarbu.andlat_leit <= int(search_form.andlat_til_input.data)
-                )
-            except:
-                pass
-
         # This is a stupid workaround.
         # Because of some DB-tuning, the ÞÍ-database hangs on sub-queries, which is what
         # the paginate(...) function does, i.e. SELECT COUNT(*) FROM (<original query>).
@@ -297,15 +293,16 @@ def root(request_hash=None):
         # search_query = search_query.paginate(
         #     page, app.config["DEFAULT_ITEMS_PER_PAGE"], False
         # )
-        per_page = app.config["DEFAULT_ITEMS_PER_PAGE"]
+        per_page = int(search_form.items_per_page_select.data)
         count_items = len(search_query.all())
         items = search_query.limit(per_page).offset((page - 1) * per_page).all()
+        # End-of-stupid-workaround
 
         pagination = Pagination(
             display_msg="Niðurstöður <b>{start}</b> til <b>{end}</b> af <b>{total}</b>",
             page=page,
             total=count_items,
-            per_page=app.config["DEFAULT_ITEMS_PER_PAGE"],
+            per_page=per_page,
             css_framework="bootstrap4",
             alignment="center",
         )

@@ -87,10 +87,6 @@ class Danarbu(db.Model):
     athugasemdir = db.Column(db.String(5000))
 
     @hybrid_property
-    def andlat_leit(self):
-        return func.nullif(cast(func.right(self.andlat, 4), Numeric(4, 0)), 0)
-
-    @hybrid_property
     def faeding_leit(self):
         return func.nullif(cast(func.right(self.faeding, 4), Numeric(4, 0)), 0)
 

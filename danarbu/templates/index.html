@@ -36,6 +36,11 @@
         background-color: #951a23 !important;
         border-color: #951a23 !important;
     }
+    .form-control.is-valid:focus, .was-validated :valid.form-control{
+        border-color: #ced4da !important;
+        background-image: inherit !important;
+        box-shadow:inherit !important;
+    }
 
     .page-link,.page-link:hover {
         color: #951a23;
@@ -127,7 +132,7 @@
 
 {% block content %}
 <div class="container mt-3">
-    <form method="POST" action="/{{post_hash}}" id="search_form">
+    <form method="POST" action="/{{post_hash}}" id="search_form" class="needs-validation" novalidate>
         {{search_form.hidden_tag()}}
         <div class="input-group mb-3">
             <div class="input-group-prepend">
@@ -147,109 +152,134 @@
             <div class="card">
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-4">
-                            <div class="input-group input-group-sm mb-3">
+                        <div class="col">
+                            <!-- Nafn -->
+                            <div class="input-group input-group-sm">
                                 <div class="input-group-prepend">
-                                {{search_form.sysla_select.label(class="input-group-text")}}
+                                {{search_form.nafn_input.label(class="input-group-text")}}
                                 </div>
-                                {{search_form.sysla_select(class="custom-select form-control")}}
+                                {{search_form.nafn_input(class="form-control")}}
                             </div>
-
-                            <div class="input-group input-group-sm mb-3">
+                            <!-- Nafn -->
+                        </div>
+                        <div class="col">
+                            <!-- Aldur -->
+                            <div class="input-group input-group-sm">
                                 <div class="input-group-prepend">
-                                {{search_form.sokn_select.label(class="input-group-text")}}
+                                <span class="input-group-text">Aldur</span>
                                 </div>
-                                {{search_form.sokn_select(class="custom-select form-control")}}
+                                {{search_form.aldur_fra_input(class="form-control", placeholder="Frá")}}
+                                {{search_form.aldur_til_input(class="form-control", placeholder="Til")}}
+                                <div class="invalid-tooltip">Heiltala á milli 0-200 og frá lægra en til</div>
                             </div>
+                            <!-- Aldur -->
+                        </div>
+                        <div class="col">
+                            <!-- Stada -->
+                            <div class="input-group input-group-sm">
+                                <div class="input-group-prepend">
+                                {{search_form.stada_input.label(class="input-group-text")}}
+                                </div>
+                                {{search_form.stada_input(class="form-control basicAutoComplete", autocomplete="off")}}
+                            </div>
+                            <!-- Stada -->
+                        </div>
+                        <div class="col">
+                            <!-- Kyn -->
+                            <div class="input-group input-group-sm">
+                                <div class="input-group-prepend">
+                                {{search_form.kyn_select.label(class="input-group-text")}}
+                                </div>
+                                {{search_form.kyn_select(class="custom-select form-control")}}
+                            </div>
+                            <!-- Kyn -->
+                        </div>
+                    </div>
 
-                            <div class="input-group input-group-sm mb-3">
+                    <div class="row mt-3">
+                        <div class="col">
+
+                            <div class="input-group input-group-sm">
                                 <div class="input-group-prepend">
                                 {{search_form.baer_select.label(class="input-group-text")}}
                                 </div>
                                 {{search_form.baer_select(class="custom-select form-control")}}
                             </div>
+                        </div>
+                        <div class="col">
+                            <div class="input-group input-group-sm">
+                                <div class="input-group-prepend">
+                                {{search_form.sokn_select.label(class="input-group-text")}}
+                                </div>
+                                {{search_form.sokn_select(class="custom-select form-control")}}
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="input-group input-group-sm">
+                                <div class="input-group-prepend">
+                                {{search_form.sysla_select.label(class="input-group-text")}}
+                                </div>
+                                {{search_form.sysla_select(class="custom-select form-control")}}
+                            </div>
+                        </div>
+                    </div>
 
-
+                    <div class="row mt-3">
+                        <div class="col">
+                            <div class="input-group input-group-sm">
+                                <div class="input-group-prepend">
+                                <span class="input-group-text">Ár</span>
+                                </div>
+                                {{search_form.ar_fra_input(class="form-control", placeholder="Frá")}}
+                                {{search_form.ar_til_input(class="form-control", placeholder="Til")}}
+                                <div class="invalid-tooltip">Heiltala á milli 1500-2000 og frá lægra en til</div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="input-group input-group-sm">
+                                <div class="input-group-prepend">
+                                <span class="input-group-text">Fæðing</span>
+                                </div>
+                                {{search_form.faeding_fra_input(class="form-control", placeholder="Frá ári")}}
+                                {{search_form.faeding_til_input(class="form-control", placeholder="Til árs")}}
+                                <div class="invalid-tooltip">Heiltala á milli 1500-2000 og frá lægra en til</div>
+                            </div>
                         </div>
                         <div class="col">
 
-                            <div class="row mb-3">
-                                <div class="col form-inline">
-                                    <div class="input-group input-group-sm">
-                                        <div class="input-group-prepend">
-                                        {{search_form.tegund_select.label(class="input-group-text")}}
-                                        </div>
-                                        {{search_form.tegund_select(class="custom-select form-control")}}
-                                    </div>
-                                    <div class="input-group input-group-sm w-25 ml-2">
-                                        <div class="input-group-prepend">
-                                        <span class="input-group-text">Ár</span>
-                                        </div>
-                                        {{search_form.ar_fra_input(class="form-control", placeholder="Frá")}}
-                                        {{search_form.ar_til_input(class="form-control", placeholder="Til")}}
-                                    </div>
-                                    <div class="input-group input-group-sm w-25 ml-2">
-                                        <div class="input-group-prepend">
-                                        <span class="input-group-text">Mat</span>
-                                        </div>
-                                        {{search_form.mat_fra_input(class="form-control", placeholder="Frá")}}
-                                        {{search_form.mat_til_input(class="form-control", placeholder="Til")}}
-                                    </div>
+                            <div class="input-group input-group-sm">
+                                <div class="input-group-prepend">
+                                <span class="input-group-text">Mat</span>
                                 </div>
+                                {{search_form.mat_fra_input(class="form-control", placeholder="Frá")}}
+                                {{search_form.mat_til_input(class="form-control", placeholder="Til")}}
+                                <div class="invalid-tooltip">Jákvæð heiltala. Frá lægri en til.</div>
                             </div>
-
-                            <div class="row mb-3">
-                                <div class="col form-inline">
-                                    <div class="input-group input-group-sm">
-                                        <div class="input-group-prepend">
-                                        {{search_form.nafn_input.label(class="input-group-text")}}
-                                        </div>
-                                        {{search_form.nafn_input(class="form-control")}}
-                                    </div>
-                                    <div class="input-group input-group-sm ml-2">
-                                        <div class="input-group-prepend">
-                                        {{search_form.stada_input.label(class="input-group-text")}}
-                                        </div>
-                                        {{search_form.stada_input(class="form-control basicAutoComplete", autocomplete="off")}}
-                                    </div>
-                                    <div class="input-group input-group-sm ml-2">
-                                        <div class="input-group-prepend">
-                                        {{search_form.kyn_select.label(class="input-group-text")}}
-                                        </div>
-                                        {{search_form.kyn_select(class="custom-select form-control")}}
-                                    </div>
+                        </div>
+                        <div class="col">
+                            <div class="input-group input-group-sm">
+                                <div class="input-group-prepend">
+                                {{search_form.tegund_select.label(class="input-group-text")}}
                                 </div>
+                                {{search_form.tegund_select(class="custom-select form-control")}}
                             </div>
-
-                            <div class="row mb-3">
-                                <div class="col form-inline">
-                                    <div class="input-group input-group-sm w-25">
-                                        <div class="input-group-prepend">
-                                        <span class="input-group-text">Aldur</span>
-                                        </div>
-                                        {{search_form.aldur_fra_input(class="form-control", placeholder="Frá")}}
-                                        {{search_form.aldur_til_input(class="form-control", placeholder="Til")}}
-                                    </div>
-                                    <div class="input-group input-group-sm w-25 ml-2">
-                                        <div class="input-group-prepend">
-                                        <span class="input-group-text">Fæðing</span>
-                                        </div>
-                                        {{search_form.faeding_fra_input(class="form-control", placeholder="Frá ári")}}
-                                        {{search_form.faeding_til_input(class="form-control", placeholder="Til árs")}}
-                                    </div>
-                                    <div class="input-group input-group-sm w-25 ml-2">
-                                        <div class="input-group-prepend">
-                                        <span class="input-group-text">Andlát</span>
-                                        </div>
-                                        {{search_form.andlat_fra_input(class="form-control", placeholder="Frá ári")}}
-                                        {{search_form.andlat_til_input(class="form-control", placeholder="Til árs")}}
-                                    </div>
-                                </div>
-                            </div>
-
                         </div>
                     </div>
-                <input type="submit" class="btn btn-primary float-right mr-2 ml-2" value="Leita" />
+                    <div class="row mt-3">
+                        <div class="col form-inline">
+                            <div class="input-group input-group-sm ml-auto">
+                                <div class="input-group-prepend">
+                                {{search_form.items_per_page_select.label(class="input-group-text")}}
+                                </div>
+                                {{search_form.items_per_page_select(class="custom-select form-control")}}
+                            </div>
+                            <div class="input-group input-group-sm ml-3">
+                                <input type="submit" class="btn btn-primary" value="Leita" />
+                            </div>
+                        </div>
+                    </div>
+ 
+
                 </div>
             </div>
         </div>
@@ -332,6 +362,77 @@ $(document).ready(function() {
     });
     $("#kyn_select").on("change", function (e) {
         $("#search_form").submit();
+    });
+
+
+    $(".needs-validation").each(function (i) {
+        $(this).on("submit", function (e) {
+            var form = e.currentTarget;
+            $("#ar_fra_input")[0].setCustomValidity("");
+            $("#ar_til_input")[0].setCustomValidity("");
+            $("#mat_fra_input")[0].setCustomValidity("");
+            $("#mat_til_input")[0].setCustomValidity("");
+            $("#aldur_fra_input")[0].setCustomValidity("");
+            $("#aldur_til_input")[0].setCustomValidity("");
+            $("#faeding_fra_input")[0].setCustomValidity("");
+            $("#faeding_til_input")[0].setCustomValidity("");
+
+            if (form.checkValidity() === false) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log("Form error.");
+            }
+
+
+            if (
+                $("#ar_fra_input").val() != ""
+                && $("#ar_til_input").val() != ""
+                && $("#ar_til_input").val()*1 < $("#ar_fra_input").val()*1
+            ) {
+                e.preventDefault();
+                e.stopPropagation();
+                $("#ar_fra_input")[0].setCustomValidity("Frá hærra en til.");
+                $("#ar_til_input")[0].setCustomValidity("Frá hærra en til.");
+            }
+
+
+            if (
+                $("#mat_fra_input").val() != ""
+                && $("#mat_til_input").val() != ""
+                && $("#mat_til_input").val()*1 < $("#mat_fra_input").val()*1
+            ) {
+                e.preventDefault();
+                e.stopPropagation();
+                $("#mat_fra_input")[0].setCustomValidity("Frá hærra en til.");
+                $("#mat_til_input")[0].setCustomValidity("Frá hærra en til.");
+            } 
+
+
+            if (
+                $("#aldur_fra_input").val() != ""
+                && $("#aldur_til_input").val() != ""
+                && $("#aldur_til_input").val()*1 < $("#aldur_fra_input").val()*1
+            ) {
+                e.preventDefault();
+                e.stopPropagation();
+                $("#aldur_fra_input")[0].setCustomValidity("Frá hærra en til.");
+                $("#aldur_til_input")[0].setCustomValidity("Frá hærra en til.");
+            }
+
+
+            if (
+                $("#faeding_fra_input").val() != ""
+                && $("#faeding_til_input").val() != ""
+                && $("#faeding_til_input").val()*1 < $("#faeding_fra_input").val()*1
+            ) {
+                e.preventDefault();
+                e.stopPropagation();
+                $("#faeding_fra_input")[0].setCustomValidity("Frá hærra en til.");
+                $("#faeding_til_input")[0].setCustomValidity("Frá hærra en til.");
+            }
+            form.classList.add("was-validated");
+
+        });
     });
 
 });
