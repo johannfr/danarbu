@@ -286,37 +286,53 @@ def root(request_hash=None):
             except:
                 pass
 
-        # This is a stupid workaround.
-        # Because of some DB-tuning, the ÞÍ-database hangs on sub-queries, which is what
-        # the paginate(...) function does, i.e. SELECT COUNT(*) FROM (<original query>).
-        # So instead, we're doing this manually, and in a not-so-smart way.
-        # search_query = search_query.paginate(
-        #     page, app.config["DEFAULT_ITEMS_PER_PAGE"], False
-        # )
-        per_page = int(search_form.items_per_page_select.data)
-        count_items = len(search_query.all())
-        items = search_query.limit(per_page).offset((page - 1) * per_page).all()
-        # End-of-stupid-workaround
-
-        pagination = Pagination(
-            display_msg="Niðurstöður <b>{start}</b> til <b>{end}</b> af <b>{total}</b>",
-            page=page,
-            total=count_items,
-            per_page=per_page,
-            css_framework="bootstrap4",
-            alignment="center",
+        any_input = any(
+            [
+                is_relevant(field)
+                for field in search_form
+                if field != search_form.items_per_page_select
+            ]
         )
 
-        return render_template(
-            "nidurstodur.html",
-            search_form=search_form,
-            search_results=items,
-            pagination=pagination,
-            post_hash=new_hash,
-            leit_active="active",
-            total=count_items,
-            url_danarbu_entry=url_danarbu_entry,
-        )
+        if any_input:
+            # This is a stupid workaround.
+            # Because of some DB-tuning, the ÞÍ-database hangs on sub-queries, which is what
+            # the paginate(...) function does, i.e. SELECT COUNT(*) FROM (<original query>).
+            # So instead, we're doing this manually, and in a not-so-smart way.
+            # search_query = search_query.paginate(
+            #     page, app.config["DEFAULT_ITEMS_PER_PAGE"], False
+            # )
+            per_page = int(search_form.items_per_page_select.data)
+            count_items = len(search_query.all())
+            items = search_query.limit(per_page).offset((page - 1) * per_page).all()
+            # End-of-stupid-workaround
+
+            pagination = Pagination(
+                display_msg="Niðurstöður <b>{start}</b> til <b>{end}</b> af <b>{total}</b>",
+                page=page,
+                total=count_items,
+                per_page=per_page,
+                css_framework="bootstrap4",
+                alignment="center",
+            )
+
+            return render_template(
+                "nidurstodur.html",
+                search_form=search_form,
+                search_results=items,
+                pagination=pagination,
+                post_hash=new_hash,
+                leit_active="active",
+                total=count_items,
+                url_danarbu_entry=url_danarbu_entry,
+            )
+        else:
+            return render_template(
+                "leitvilla.html",
+                search_form=search_form,
+                post_hash=new_hash,
+                leit_active="active",
+            )
     else:
         return render_template(
             "index.html",
