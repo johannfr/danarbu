@@ -9,9 +9,8 @@ do
 done
 
 docker build -t ${app}:latest -f docker/Dockerfile .
-docker run -d -p 80:80 \
+docker run -d -p 7010:80 \
     --name=${app} \
-    --network="host" \
     -e FLASK_APP=main.py \
     -e DANARBU_DBURI="" \
     -v ${PWD}:/app ${app}
