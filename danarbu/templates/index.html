@@ -114,16 +114,13 @@
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ml-auto">
             <li class="nav-item">
-                <a href="/" class="nav-link {{leit_active}}">Leit</a>
+                <button class="btn nav-link" data-toggle="modal" data-target="#umModal" data-subpage="um" id="umButton">Um vefinn</button>
             </li>
             <li class="nav-item">
-                <a href="/um" class="nav-link {{um_vefinn_active}}">Um vefinn</a>
+                <button class="btn nav-link" data-toggle="modal" data-target="#itarefniModal" data-subpage="itarefni" id="itarefniButton">Ítarefni</button>
             </li>
             <li class="nav-item">
-                <a href="/itarefni" class="nav-link {{itarefni_active}}">Ítarefni</a>
-            </li>
-            <li class="nav-item">
-                <a href="/hjalp" class="nav-link {{hjalp_active}}">Hjálp</a>
+                <button class="btn nav-link" data-toggle="modal" data-target="#hjalpModal" data-subpage="hjalp" id="hjalpButton">Hjálp</button>
             </li>
         </ul>
     </div>
@@ -301,8 +298,68 @@
 
 </div>
 
+<div class="modal fade subpageModal" id="umModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="umTitle">Um vefinn</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div id="umBody" class="modal-body">
+        {{um_content|safe}}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Loka</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade subpageModal" id="itarefniModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="itarefniTitle">Ítarefni</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div id="itarefniBody" class="modal-body">
+        {{itarefni_content|safe}}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Loka</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade subpageModal" id="hjalpModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="hjalpTitle">Hjálp</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div id="hjalpBody" class="modal-body">
+        {{hjalp_content|safe}}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Loka</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 {% endblock %}
+
+
+
 
 {% block scripts %}
 {{super()}}
@@ -339,12 +396,27 @@ $(document).ready(function() {
         });
     });
 
+
     $("#resultModal").on("hide.bs.modal", function (e) {
+        window.history.back();
+    });
+
+    $(".subpageModal").on("show.bs.modal", function (e) {
+        var button = $(e.relatedTarget);
+        var subpage = button.data("subpage");
+        window.history.pushState({}, "", "/"+ subpage +"/");
+    });
+
+    $(".subpageModal").on("hide.bs.modal", function (e) {
         window.history.back();
     });
 
     {% if url_danarbu_entry %}
     $("#danarbu_result_{{url_danarbu_entry}}").click();
+    {% endif %}
+
+    {% if url_subpage %}
+    $("#{{url_subpage}}Button").click();
     {% endif %}
 
     $("#sysla_select").on("change", function (e) {

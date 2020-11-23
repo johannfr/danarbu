@@ -50,6 +50,9 @@ def generate_hash():
 
 
 @app.route("/", methods=["GET", "POST"])
+@app.route("/um/", methods=["GET"])
+@app.route("/itarefni/", methods=["GET"])
+@app.route("/hjalp/", methods=["GET"])
 @app.route("/<request_hash>", methods=["GET", "POST"])
 def root(request_hash=None):
     new_hash = generate_hash()
@@ -132,6 +135,22 @@ def root(request_hash=None):
     search_form.baer_select.choices = baeir
 
     # search_form.baer_select.render_kw = {"disabled": False}
+
+    um_content = (
+        db.session.query(models.UmVefinn)
+        .order_by(models.UmVefinn.id.desc())
+        .first()
+        .texti
+    )
+    itarefni_content = (
+        db.session.query(models.Itarefni)
+        .order_by(models.Itarefni.id.desc())
+        .first()
+        .texti
+    )
+    hjalp_content = (
+        db.session.query(models.Hjalp).order_by(models.Hjalp.id.desc()).first().texti
+    )
 
     if execute_search:
         page = request.args.get(get_page_parameter(), type=int, default=1)
@@ -322,24 +341,30 @@ def root(request_hash=None):
                 search_results=items,
                 pagination=pagination,
                 post_hash=new_hash,
-                leit_active="active",
                 total=count_items,
                 url_danarbu_entry=url_danarbu_entry,
+                um_content=um_content,
+                itarefni_content=itarefni_content,
+                hjalp_content=hjalp_content,
             )
         else:
             return render_template(
                 "leitvilla.html",
                 search_form=search_form,
                 post_hash=new_hash,
-                leit_active="active",
             )
     else:
+        url_rule = str(request.url_rule).replace("/", "")
+        url_subpage = url_rule if url_rule in ["um", "itarefni", "hjalp"] else None
         return render_template(
             "index.html",
             search_form=search_form,
             syslur=syslur,
             post_hash=new_hash,
-            leit_active="active",
+            url_subpage=url_subpage,
+            um_content=um_content,
+            itarefni_content=itarefni_content,
+            hjalp_content=hjalp_content,
         )
 
 
@@ -444,33 +469,3 @@ def stada():
         .all()
     ]
     return jsonify(stodur)
-
-
-@app.route("/um")
-def um():
-    results = (
-        db.session.query(models.UmVefinn).order_by(models.UmVefinn.id.desc()).first()
-    )
-    return render_template(
-        "static.html", static_html=results.texti, um_vefinn_active="active"
-    )
-
-
-@app.route("/itarefni")
-def itarefni():
-    results = (
-        db.session.query(models.Itarefni).order_by(models.Itarefni.id.desc()).first()
-    )
-
-    return render_template(
-        "static.html", static_html=results.texti, itarefni_active="active"
-    )
-
-
-@app.route("/hjalp")
-def hjalp():
-    results = db.session.query(models.Hjalp).order_by(models.Hjalp.id.desc()).first()
-
-    return render_template(
-        "static.html", static_html=results.texti, hjalp_active="active"
-    )
