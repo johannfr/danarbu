@@ -49,31 +49,11 @@ def generate_hash():
     return new_hash
 
 
-@app.route("/", methods=["GET", "POST"])
-@app.route("/um/", methods=["GET"])
-@app.route("/itarefni/", methods=["GET"])
-@app.route("/hjalp/", methods=["GET"])
-@app.route("/<request_hash>", methods=["GET", "POST"])
-def root(request_hash=None):
-    new_hash = generate_hash()
-    execute_search = False
+def static_content(static_model):
+    return db.session.query(static_model).order_by(static_model.id.desc()).first().texti
 
-    if request.method == "POST":
-        tinyurl = db.session.query(models.Tinyurl).get(request_hash)
-        tinyurl.obj = json.dumps(request.form)
-        db.session.commit()
-        execute_search = True
-    elif request.method == "GET" and request_hash is not None:
-        tinyurl = db.session.query(models.Tinyurl).get(request_hash)
-        try:
-            request.form = ImmutableMultiDict(json.loads(tinyurl.obj))
-            tinyurl.visited = tinyurl.visited + 1
-            tinyurl.visited_at = datetime.datetime.utcnow()
-            db.session.commit()
-        except:
-            abort(404)
-        execute_search = True
 
+def clean_tinyurl():
     # Clean old non-visited entries from the tinyurl table.
     current_time = datetime.datetime.utcnow()
     tinyurl_delete = current_time - datetime.timedelta(weeks=30)
@@ -85,8 +65,8 @@ def root(request_hash=None):
     db.session.execute(clean_tinyurl)
     db.session.commit()
 
-    search_form = SearchForm(request.form)
 
+def create_ssb_dropdown(search_form):
     syslur = [("", "")]
     soknir = [("", "")]
     baeir = [("", "")]
@@ -97,7 +77,6 @@ def root(request_hash=None):
         .all()
     ):
         syslur.append((sysla, sysla))
-    search_form.sysla_select.choices = syslur
 
     # Sokn
     sokn_query = (
@@ -112,8 +91,6 @@ def root(request_hash=None):
 
     for (sokn,) in sokn_query.all():
         soknir.append((sokn, sokn))
-
-    search_form.sokn_select.choices = soknir
 
     # Baer
     baer_query = (
@@ -132,178 +109,247 @@ def root(request_hash=None):
 
     for (baer,) in baer_query.all():
         baeir.append((baer, baer))
-    search_form.baer_select.choices = baeir
 
-    # search_form.baer_select.render_kw = {"disabled": False}
+    return syslur, soknir, baeir
 
-    um_content = (
-        db.session.query(models.UmVefinn)
-        .order_by(models.UmVefinn.id.desc())
-        .first()
-        .texti
+
+def create_search_query(search_form):
+    fulltext_columns = [
+        models.Danarbu.nafn,
+        models.Danarbu.stada,
+        models.Danarbu.baer_heiti,
+        models.Danarbu.sysla_heiti,
+        models.Danarbu.sokn_heiti,
+    ]
+    if is_relevant(search_form.search_string):
+        search_query = (
+            db.session.query(
+                models.Danarbu,
+                models.MatchCol(fulltext_columns, search_form.search_string.data).label(
+                    "score"
+                ),
+            )
+            .filter(models.Match(fulltext_columns, search_form.search_string.data))
+            .order_by(
+                desc("score"),
+                models.Danarbu.sysla_heiti,
+                models.Danarbu.artal,
+                models.Danarbu.nafn,
+            )
+        )
+    else:
+        search_query = db.session.query(
+            models.Danarbu,
+            literal_column("42").label("score"),  # Placeholder for score.
+        ).order_by(
+            models.Danarbu.sysla_heiti, models.Danarbu.artal, models.Danarbu.nafn
+        )
+
+    if is_relevant(search_form.sysla_select):
+        search_query = search_query.filter(
+            models.Danarbu.sysla_heiti == search_form.sysla_select.data
+        )
+
+    if is_relevant(search_form.sokn_select):
+        search_query = search_query.filter(
+            models.Danarbu.sokn_heiti == search_form.sokn_select.data
+        )
+
+    if is_relevant(search_form.baer_select):
+        search_query = search_query.filter(
+            models.Danarbu.baer_heiti == search_form.baer_select.data
+        )
+
+    if is_relevant(search_form.tegund_select):
+        if search_form.tegund_select.data == "danarbu":
+            search_query = search_query.filter(
+                models.Danarbu.danarbu == models.Tilvist.til
+            )
+        elif search_form.tegund_select.data == "skiptabok":
+            search_query = search_query.filter(
+                models.Danarbu.skiptabok == models.Tilvist.til
+            )
+        elif search_form.tegund_select.data == "lods":
+            search_query = search_query.filter(
+                models.Danarbu.danarbu == models.Tilvist.lods
+            )
+        elif search_form.tegund_select.data == "uppbod":
+            search_query = search_query.filter(
+                models.Danarbu.uppskrift == models.Tilvist.til
+            )
+
+    if is_relevant(search_form.ar_fra_input):
+        try:
+            search_query = search_query.filter(
+                models.Danarbu.artal >= int(search_form.ar_fra_input.data)
+            )
+        except:
+            pass
+
+    if is_relevant(search_form.ar_til_input):
+        try:
+            search_query = search_query.filter(
+                models.Danarbu.artal <= int(search_form.ar_til_input.data)
+            )
+        except:
+            pass
+
+    if is_relevant(search_form.mat_fra_input):
+        try:
+            search_query = search_query.filter(
+                models.Danarbu.mat >= int(search_form.mat_fra_input.data)
+            )
+        except:
+            pass
+
+    if is_relevant(search_form.mat_til_input):
+        try:
+            search_query = search_query.filter(
+                models.Danarbu.mat <= int(search_form.mat_til_input.data)
+            )
+        except:
+            pass
+
+    if is_relevant(search_form.nafn_input):
+        search_query = search_query.filter(
+            models.Danarbu.nafn.like("%{}%".format(search_form.nafn_input.data))
+        )
+
+    if is_relevant(search_form.stada_input):
+        search_query = search_query.filter(
+            models.Danarbu.stada.like(search_form.stada_input.data)
+        )
+
+    if is_relevant(search_form.kyn_select):
+        try:
+            search_query = search_query.filter(
+                models.Danarbu.kyn == int(search_form.kyn_select.data)
+            )
+        except:
+            pass
+
+    if is_relevant(search_form.aldur_fra_input):
+        try:
+            search_query = search_query.filter(
+                models.Danarbu.aldur >= int(search_form.aldur_fra_input.data)
+            )
+        except:
+            pass
+
+    if is_relevant(search_form.aldur_til_input):
+        try:
+            search_query = search_query.filter(
+                models.Danarbu.aldur <= int(search_form.aldur_til_input.data)
+            )
+        except:
+            pass
+
+    if is_relevant(search_form.faeding_fra_input):
+        try:
+            search_query = search_query.filter(
+                models.Danarbu.faeding_leit >= int(search_form.faeding_fra_input.data)
+            )
+        except:
+            pass
+
+    if is_relevant(search_form.faeding_til_input):
+        try:
+            search_query = search_query.filter(
+                models.Danarbu.faeding_leit <= int(search_form.faeding_til_input.data)
+            )
+        except:
+            pass
+
+    return search_query
+
+
+def render_nidurstodur(
+    search_form, search_query, page, new_hash, url_danarbu_entry=None
+):
+    # This is a stupid workaround.
+    # Because of some DB-tuning, the ÞÍ-database hangs on sub-queries, which is what
+    # the paginate(...) function does, i.e. SELECT COUNT(*) FROM (<original query>).
+    # So instead, we're doing this manually, and in a not-so-smart way.
+    # search_query = search_query.paginate(
+    #     page, app.config["DEFAULT_ITEMS_PER_PAGE"], False
+    # )
+    per_page = (
+        int(search_form.items_per_page_select.data)
+        if search_form.items_per_page_select.data
+        else app.config["DEFAULT_ITEMS_PER_PAGE"]
     )
-    itarefni_content = (
-        db.session.query(models.Itarefni)
-        .order_by(models.Itarefni.id.desc())
-        .first()
-        .texti
+
+    count_items = len(search_query.all())
+    items = search_query.limit(per_page).offset((page - 1) * per_page).all()
+    # End-of-stupid-workaround
+
+    pagination = Pagination(
+        display_msg="Niðurstöður <b>{start}</b> til <b>{end}</b> af <b>{total}</b>",
+        page=page,
+        total=count_items,
+        per_page=per_page,
+        css_framework="bootstrap4",
+        alignment="center",
     )
-    hjalp_content = (
-        db.session.query(models.Hjalp).order_by(models.Hjalp.id.desc()).first().texti
+
+    return render_template(
+        "nidurstodur.html",
+        search_form=search_form,
+        search_results=items,
+        pagination=pagination,
+        post_hash=new_hash,
+        total=count_items,
+        url_danarbu_entry=url_danarbu_entry,
+        um_content=static_content(models.UmVefinn),
+        itarefni_content=static_content(models.Itarefni),
+        hjalp_content=static_content(models.Hjalp),
     )
+
+
+@app.route("/", methods=["GET", "POST"])
+@app.route("/um/", methods=["GET"])
+@app.route("/itarefni/", methods=["GET"])
+@app.route("/hjalp/", methods=["GET"])
+@app.route("/<request_hash>", methods=["GET", "POST"])
+def root(request_hash=None):
+    new_hash = generate_hash()
+    page = request.args.get(get_page_parameter(), type=int, default=1)
+    url_danarbu_entry = request.args.get("danarbu", type=int, default=None)
+
+    execute_search = False
+
+    if request.method == "POST":
+        tinyurl = db.session.query(models.Tinyurl).get(request_hash)
+        tinyurl.obj = json.dumps(request.form)
+        db.session.commit()
+        execute_search = True
+    elif request.method == "GET" and request_hash is not None:
+        tinyurl = db.session.query(models.Tinyurl).get(request_hash)
+        try:
+            request.form = ImmutableMultiDict(json.loads(tinyurl.obj))
+            tinyurl.visited = tinyurl.visited + 1
+            tinyurl.visited_at = datetime.datetime.utcnow()
+            db.session.commit()
+        except:
+            abort(404)
+        execute_search = True
+
+    # Create an instance of our search-form.
+    # It can have one of three states/origins
+    #  * Clean/Empty (GET /)
+    #  * Populated by a POST-request where the user is searching for something
+    #  * Populated from the database, identified by the Tinyurl hash
+    #    (injected into request.form)
+    search_form = SearchForm(request.form)
+
+    # Populate SSB dropdowns.
+    (
+        search_form.sysla_select.choices,
+        search_form.sokn_select.choices,
+        search_form.baer_select.choices,
+    ) = create_ssb_dropdown(search_form)
 
     if execute_search:
-        page = request.args.get(get_page_parameter(), type=int, default=1)
-        url_danarbu_entry = request.args.get("danarbu", type=int, default=None)
-        print(url_danarbu_entry)
-
-        fulltext_columns = [
-            models.Danarbu.nafn,
-            models.Danarbu.stada,
-            models.Danarbu.baer_heiti,
-            models.Danarbu.sysla_heiti,
-            models.Danarbu.sokn_heiti,
-        ]
-        if is_relevant(search_form.search_string):
-            search_query = (
-                db.session.query(
-                    models.Danarbu,
-                    models.MatchCol(
-                        fulltext_columns, search_form.search_string.data
-                    ).label("score"),
-                )
-                .filter(models.Match(fulltext_columns, search_form.search_string.data))
-                .order_by(
-                    desc("score"),
-                    models.Danarbu.sysla_heiti,
-                    models.Danarbu.artal,
-                    models.Danarbu.nafn,
-                )
-            )
-        else:
-            search_query = db.session.query(
-                models.Danarbu,
-                literal_column("42").label("score"),  # Placeholder for score.
-            ).order_by(
-                models.Danarbu.sysla_heiti, models.Danarbu.artal, models.Danarbu.nafn
-            )
-
-        if is_relevant(search_form.sysla_select):
-            search_query = search_query.filter(
-                models.Danarbu.sysla_heiti == search_form.sysla_select.data
-            )
-
-        if is_relevant(search_form.sokn_select):
-            search_query = search_query.filter(
-                models.Danarbu.sokn_heiti == search_form.sokn_select.data
-            )
-
-        if is_relevant(search_form.baer_select):
-            search_query = search_query.filter(
-                models.Danarbu.baer_heiti == search_form.baer_select.data
-            )
-
-        if is_relevant(search_form.tegund_select):
-            if search_form.tegund_select.data == "danarbu":
-                search_query = search_query.filter(
-                    models.Danarbu.danarbu == models.Tilvist.til
-                )
-            elif search_form.tegund_select.data == "skiptabok":
-                search_query = search_query.filter(
-                    models.Danarbu.skiptabok == models.Tilvist.til
-                )
-            elif search_form.tegund_select.data == "lods":
-                search_query = search_query.filter(
-                    models.Danarbu.danarbu == models.Tilvist.lods
-                )
-            elif search_form.tegund_select.data == "uppbod":
-                search_query = search_query.filter(
-                    models.Danarbu.uppskrift == models.Tilvist.til
-                )
-
-        if is_relevant(search_form.ar_fra_input):
-            try:
-                search_query = search_query.filter(
-                    models.Danarbu.artal >= int(search_form.ar_fra_input.data)
-                )
-            except:
-                pass
-
-        if is_relevant(search_form.ar_til_input):
-            try:
-                search_query = search_query.filter(
-                    models.Danarbu.artal <= int(search_form.ar_til_input.data)
-                )
-            except:
-                pass
-
-        if is_relevant(search_form.mat_fra_input):
-            try:
-                search_query = search_query.filter(
-                    models.Danarbu.mat >= int(search_form.mat_fra_input.data)
-                )
-            except:
-                pass
-
-        if is_relevant(search_form.mat_til_input):
-            try:
-                search_query = search_query.filter(
-                    models.Danarbu.mat <= int(search_form.mat_til_input.data)
-                )
-            except:
-                pass
-
-        if is_relevant(search_form.nafn_input):
-            search_query = search_query.filter(
-                models.Danarbu.nafn.like("%{}%".format(search_form.nafn_input.data))
-            )
-
-        if is_relevant(search_form.stada_input):
-            search_query = search_query.filter(
-                models.Danarbu.stada.like(search_form.stada_input.data)
-            )
-
-        if is_relevant(search_form.kyn_select):
-            try:
-                search_query = search_query.filter(
-                    models.Danarbu.kyn == int(search_form.kyn_select.data)
-                )
-            except:
-                pass
-
-        if is_relevant(search_form.aldur_fra_input):
-            try:
-                search_query = search_query.filter(
-                    models.Danarbu.aldur >= int(search_form.aldur_fra_input.data)
-                )
-            except:
-                pass
-
-        if is_relevant(search_form.aldur_til_input):
-            try:
-                search_query = search_query.filter(
-                    models.Danarbu.aldur <= int(search_form.aldur_til_input.data)
-                )
-            except:
-                pass
-
-        if is_relevant(search_form.faeding_fra_input):
-            try:
-                search_query = search_query.filter(
-                    models.Danarbu.faeding_leit
-                    >= int(search_form.faeding_fra_input.data)
-                )
-            except:
-                pass
-
-        if is_relevant(search_form.faeding_til_input):
-            try:
-                search_query = search_query.filter(
-                    models.Danarbu.faeding_leit
-                    <= int(search_form.faeding_til_input.data)
-                )
-            except:
-                pass
 
         any_input = any(
             [
@@ -314,39 +360,12 @@ def root(request_hash=None):
         )
 
         if any_input:
-            # This is a stupid workaround.
-            # Because of some DB-tuning, the ÞÍ-database hangs on sub-queries, which is what
-            # the paginate(...) function does, i.e. SELECT COUNT(*) FROM (<original query>).
-            # So instead, we're doing this manually, and in a not-so-smart way.
-            # search_query = search_query.paginate(
-            #     page, app.config["DEFAULT_ITEMS_PER_PAGE"], False
-            # )
-            per_page = int(search_form.items_per_page_select.data)
-            count_items = len(search_query.all())
-            items = search_query.limit(per_page).offset((page - 1) * per_page).all()
-            # End-of-stupid-workaround
 
-            pagination = Pagination(
-                display_msg="Niðurstöður <b>{start}</b> til <b>{end}</b> af <b>{total}</b>",
-                page=page,
-                total=count_items,
-                per_page=per_page,
-                css_framework="bootstrap4",
-                alignment="center",
+            search_query = create_search_query(search_form)
+            return render_nidurstodur(
+                search_form, search_query, page, new_hash, url_danarbu_entry
             )
 
-            return render_template(
-                "nidurstodur.html",
-                search_form=search_form,
-                search_results=items,
-                pagination=pagination,
-                post_hash=new_hash,
-                total=count_items,
-                url_danarbu_entry=url_danarbu_entry,
-                um_content=um_content,
-                itarefni_content=itarefni_content,
-                hjalp_content=hjalp_content,
-            )
         else:
             return render_template(
                 "leitvilla.html",
@@ -359,13 +378,38 @@ def root(request_hash=None):
         return render_template(
             "index.html",
             search_form=search_form,
-            syslur=syslur,
             post_hash=new_hash,
             url_subpage=url_subpage,
-            um_content=um_content,
-            itarefni_content=itarefni_content,
-            hjalp_content=hjalp_content,
+            um_content=static_content(models.UmVefinn),
+            itarefni_content=static_content(models.Itarefni),
+            hjalp_content=static_content(models.Hjalp),
         )
+
+
+@app.route("/heimild/<endanleg>")
+def heimild(endanleg):
+    new_hash = generate_hash()
+    page = request.args.get(get_page_parameter(), type=int, default=1)
+    url_danarbu_entry = request.args.get("danarbu", type=int, default=None)
+    search_form = SearchForm(request.form)
+
+    # Populate SSB dropdowns.
+    (
+        search_form.sysla_select.choices,
+        search_form.sokn_select.choices,
+        search_form.baer_select.choices,
+    ) = create_ssb_dropdown(search_form)
+
+    search_query = (
+        db.session.query(models.Danarbu, literal_column("42").label("score"))
+        .filter(models.Heimildir.endanleg == endanleg)
+        .filter(models.Danarbu.id == models.Heimildir.danarbu)
+        .order_by(models.Danarbu.sysla_heiti, models.Danarbu.artal, models.Danarbu.nafn)
+    )
+
+    return render_nidurstodur(
+        search_form, search_query, page, new_hash, url_danarbu_entry
+    )
 
 
 def parse_date(date):
