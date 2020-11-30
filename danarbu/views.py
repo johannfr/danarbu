@@ -70,45 +70,88 @@ def create_ssb_dropdown(search_form):
     syslur = [("", "")]
     soknir = [("", "")]
     baeir = [("", "")]
-    for (sysla,) in (
+
+    sysla_query = (
         db.session.query(models.Danarbu.sysla_heiti)
         .distinct()
         .order_by(models.Danarbu.sysla_heiti)
-        .all()
-    ):
+    )
+    if is_relevant(search_form.baer_select):
+        sysla_query = sysla_query.filter(
+            models.Danarbu.sysla_heiti == search_form.baer_select.data.split(":")[2]
+        )
+    elif is_relevant(search_form.sokn_select):
+        sysla_query = sysla_query.filter(
+            models.Danarbu.sysla_heiti == search_form.sokn_select.data.split(":")[1]
+        )
+
+    for (sysla,) in sysla_query.all():
         syslur.append((sysla, sysla))
 
     # Sokn
     sokn_query = (
-        db.session.query(models.Danarbu.sokn_heiti)
+        db.session.query(
+            func.concat(
+                models.Danarbu.sokn_heiti, " - ", models.Danarbu.sysla_heiti
+            ).label("svikakisa"),
+            models.Danarbu.sokn_heiti,
+            models.Danarbu.sysla_heiti,
+        )
         .distinct()
-        .order_by(models.Danarbu.sokn_heiti)
+        .order_by("svikakisa")
     )
-    if is_relevant(search_form.sysla_select):
+    if is_relevant(search_form.baer_select):
+        sokn_query = sokn_query.filter(
+            models.Danarbu.sokn_heiti == search_form.baer_select.data.split(":")[1],
+            models.Danarbu.sysla_heiti == search_form.baer_select.data.split(":")[2],
+        )
+    elif is_relevant(search_form.sysla_select):
         sokn_query = sokn_query.filter(
             models.Danarbu.sysla_heiti == search_form.sysla_select.data
         )
 
-    for (sokn,) in sokn_query.all():
-        soknir.append((sokn, sokn))
+    for (
+        svikakisa,
+        sokn,
+        sysla,
+    ) in sokn_query.all():
+        soknir.append((":".join([sokn, sysla]), svikakisa))
 
     # Baer
     baer_query = (
-        db.session.query(models.Danarbu.baer_heiti)
+        db.session.query(
+            func.concat(
+                models.Danarbu.baer_heiti,
+                " - ",
+                models.Danarbu.sokn_heiti,
+                " - ",
+                models.Danarbu.sysla_heiti,
+            ).label("svikakisa"),
+            models.Danarbu.baer_heiti,
+            models.Danarbu.sokn_heiti,
+            models.Danarbu.sysla_heiti,
+        )
         .distinct()
-        .order_by(models.Danarbu.baer_heiti)
+        .order_by("svikakisa")
     )
-    if is_relevant(search_form.sysla_select):
+
+    if is_relevant(search_form.sokn_select):
+        baer_query = baer_query.filter(
+            models.Danarbu.sokn_heiti == search_form.sokn_select.data.split(":")[0],
+            models.Danarbu.sysla_heiti == search_form.sokn_select.data.split(":")[1],
+        )
+    elif is_relevant(search_form.sysla_select):
         baer_query = baer_query.filter(
             models.Danarbu.sysla_heiti == search_form.sysla_select.data
         )
-    if is_relevant(search_form.sokn_select):
-        baer_query = baer_query.filter(
-            models.Danarbu.sokn_heiti == search_form.sokn_select.data
-        )
 
-    for (baer,) in baer_query.all():
-        baeir.append((baer, baer))
+    for (
+        svikakisa,
+        baer,
+        sokn,
+        sysla,
+    ) in baer_query.all():
+        baeir.append((":".join([baer, sokn, sysla]), svikakisa))
 
     return syslur, soknir, baeir
 
@@ -145,19 +188,20 @@ def create_search_query(search_form):
             models.Danarbu.sysla_heiti, models.Danarbu.artal, models.Danarbu.nafn
         )
 
-    if is_relevant(search_form.sysla_select):
-        search_query = search_query.filter(
-            models.Danarbu.sysla_heiti == search_form.sysla_select.data
-        )
-
-    if is_relevant(search_form.sokn_select):
-        search_query = search_query.filter(
-            models.Danarbu.sokn_heiti == search_form.sokn_select.data
-        )
-
     if is_relevant(search_form.baer_select):
         search_query = search_query.filter(
-            models.Danarbu.baer_heiti == search_form.baer_select.data
+            models.Danarbu.baer_heiti == search_form.baer_select.data.split(":")[0],
+            models.Danarbu.sokn_heiti == search_form.baer_select.data.split(":")[1],
+            models.Danarbu.sysla_heiti == search_form.baer_select.data.split(":")[2],
+        )
+    elif is_relevant(search_form.sokn_select):
+        search_query = search_query.filter(
+            models.Danarbu.sokn_heiti == search_form.sokn_select.data.split(":")[0],
+            models.Danarbu.sysla_heiti == search_form.sokn_select.data.split(":")[1],
+        )
+    elif is_relevant(search_form.sysla_select):
+        search_query = search_query.filter(
+            models.Danarbu.sysla_heiti == search_form.sysla_select.data
         )
 
     if is_relevant(search_form.tegund_select):
@@ -384,6 +428,240 @@ def root(request_hash=None):
             itarefni_content=static_content(models.Itarefni),
             hjalp_content=static_content(models.Hjalp),
         )
+
+
+@app.route("/update/sysla", methods=["POST"])
+def update_sysla():
+
+    if not set(["sysla", "sokn", "baer"]).issubset(set(request.json.keys())):
+        abort(400)
+
+    soknir = [{"value": "", "text": ""}]
+    baeir = [{"value": "", "text": ""}]
+
+    # Sokn
+    sokn_query = (
+        db.session.query(
+            func.concat(
+                models.Danarbu.sokn_heiti, " - ", models.Danarbu.sysla_heiti
+            ).label("svikakisa"),
+            models.Danarbu.sokn_heiti,
+            models.Danarbu.sysla_heiti,
+        )
+        .distinct()
+        .order_by("svikakisa")
+    )
+    if len(request.json["sysla"]) > 0:
+        sokn_query = sokn_query.filter(
+            models.Danarbu.sysla_heiti == request.json["sysla"]
+        )
+
+    # Baer
+    baer_query = (
+        db.session.query(
+            func.concat(
+                models.Danarbu.baer_heiti,
+                " - ",
+                models.Danarbu.sokn_heiti,
+                " - ",
+                models.Danarbu.sysla_heiti,
+            ).label("svikakisa"),
+            models.Danarbu.baer_heiti,
+            models.Danarbu.sokn_heiti,
+            models.Danarbu.sysla_heiti,
+        )
+        .distinct()
+        .order_by("svikakisa")
+    )
+    if len(request.json["sysla"]) > 0:
+        baer_query = baer_query.filter(
+            models.Danarbu.sysla_heiti == request.json["sysla"]
+        )
+
+    for (
+        svikakisa,
+        sokn,
+        sysla,
+    ) in sokn_query.all():
+        soknir.append({"value": ":".join([sokn, sysla]), "text": svikakisa})
+
+    for (
+        svikakisa,
+        baer,
+        sokn,
+        sysla,
+    ) in baer_query.all():
+        baeir.append({"value": ":".join([baer, sokn, sysla]), "text": svikakisa})
+
+    sokn_value = (
+        request.json["sokn"]
+        if request.json["sokn"].endswith(request.json["sysla"])
+        else ""
+    )
+
+    baer_value = (
+        request.json["baer"]
+        if request.json["baer"].endswith(request.json["sysla"])
+        else ""
+    )
+
+    return jsonify(
+        {
+            "soknir": soknir,
+            "baeir": baeir,
+            "sokn_value": sokn_value,
+            "baer_value": baer_value,
+        }
+    )
+
+
+@app.route("/update/sokn", methods=["POST"])
+def update_sokn():
+
+    if not set(["sysla", "sokn", "baer"]).issubset(set(request.json.keys())):
+        abort(400)
+
+    syslur = [{"value": "", "text": ""}]
+    baeir = [{"value": "", "text": ""}]
+
+    # Sysla
+    sysla_query = (
+        db.session.query(models.Danarbu.sysla_heiti)
+        .distinct()
+        .order_by(models.Danarbu.sysla_heiti)
+    )
+    if len(request.json["sokn"]) > 0:
+        sysla_query = sysla_query.filter(
+            models.Danarbu.sokn_heiti == request.json["sokn"].split(":")[0],
+            models.Danarbu.sysla_heiti == request.json["sokn"].split(":")[1],
+        )
+
+    # Baer
+    baer_query = (
+        db.session.query(
+            func.concat(
+                models.Danarbu.baer_heiti,
+                " - ",
+                models.Danarbu.sokn_heiti,
+                " - ",
+                models.Danarbu.sysla_heiti,
+            ).label("svikakisa"),
+            models.Danarbu.baer_heiti,
+            models.Danarbu.sokn_heiti,
+            models.Danarbu.sysla_heiti,
+        )
+        .distinct()
+        .order_by("svikakisa")
+    )
+    if len(request.json["sokn"]) > 0:
+        baer_query = baer_query.filter(
+            models.Danarbu.sokn_heiti == request.json["sokn"].split(":")[0],
+            models.Danarbu.sysla_heiti == request.json["sokn"].split(":")[1],
+        )
+
+    for sysla in sysla_query.all():
+        syslur.append({"value": sysla, "text": sysla})
+
+    for (
+        svikakisa,
+        baer,
+        sokn,
+        sysla,
+    ) in baer_query.all():
+        baeir.append({"value": ":".join([baer, sokn, sysla]), "text": svikakisa})
+
+    sysla_value = (
+        request.json["sokn"].split(":")[1]
+        if len(request.json["sokn"]) > 0
+        else request.json["sysla"]
+    )
+
+    baer_value = (
+        request.json["baer"]
+        if len(request.json["baer"]) > 0
+        and request.json["baer"].split(":")[1] == request.json["sokn"].split(":")[0]
+        and request.json["baer"].endswith(request.json["sokn"].split(":")[1])
+        else ""
+    )
+
+    return jsonify(
+        {
+            "syslur": syslur,
+            "baeir": baeir,
+            "sysla_value": sysla_value,
+            "baer_value": baer_value,
+        }
+    )
+
+
+@app.route("/update/baer", methods=["POST"])
+def update_baer():
+    if not set(["sysla", "sokn", "baer"]).issubset(set(request.json.keys())):
+        abort(400)
+
+    syslur = [{"value": "", "text": ""}]
+    soknir = [{"value": "", "text": ""}]
+
+    # Sysla
+    sysla_query = (
+        db.session.query(models.Danarbu.sysla_heiti)
+        .distinct()
+        .order_by(models.Danarbu.sysla_heiti)
+    )
+    if len(request.json["baer"]) > 0:
+        sysla_query = sysla_query.filter(
+            models.Danarbu.sokn_heiti == request.json["baer"].split(":")[1],
+            models.Danarbu.sysla_heiti == request.json["baer"].split(":")[2],
+        )
+
+    # Sokn
+    sokn_query = (
+        db.session.query(
+            func.concat(
+                models.Danarbu.sokn_heiti, " - ", models.Danarbu.sysla_heiti
+            ).label("svikakisa"),
+            models.Danarbu.sokn_heiti,
+            models.Danarbu.sysla_heiti,
+        )
+        .distinct()
+        .order_by("svikakisa")
+    )
+    if len(request.json["baer"]) > 0:
+        sokn_query = sokn_query.filter(
+            models.Danarbu.sokn_heiti == request.json["baer"].split(":")[1],
+            models.Danarbu.sysla_heiti == request.json["baer"].split(":")[2],
+        )
+
+    for (
+        svikakisa,
+        sokn,
+        sysla,
+    ) in sokn_query.all():
+        soknir.append({"value": ":".join([sokn, sysla]), "text": svikakisa})
+
+    for sysla in sysla_query.all():
+        syslur.append({"value": sysla, "text": sysla})
+
+    sysla_value = (
+        request.json["baer"].split(":")[2]
+        if len(request.json["baer"]) > 0
+        else request.json["sysla"]
+    )
+
+    sokn_value = (
+        ":".join(request.json["baer"].split(":")[1:])
+        if len(request.json["baer"]) > 0
+        else request.json["sokn"]
+    )
+
+    return jsonify(
+        {
+            "syslur": syslur,
+            "soknir": soknir,
+            "sysla_value": sysla_value,
+            "sokn_value": sokn_value,
+        }
+    )
 
 
 @app.route("/heimild/<endanleg>")

@@ -103,7 +103,7 @@
 {% block title %}Dánarbú - 18. og 19. öld{% endblock %}
 
 {% block navbar %}
-<nav class="navbar sticky-top navbar-expand-lg container navbar-light">
+<nav class="navbar sticky-top navbar-expand-lg container navbar-light bg-white">
     <a class="navbar-brand" href="/">
         <div id="ti-logo" class="d-inline-block"></div>
         Dánarbú - 18. og 19. öld
@@ -200,7 +200,7 @@
                                 <div class="input-group-prepend">
                                 {{search_form.baer_select.label(class="input-group-text")}}
                                 </div>
-                                {{search_form.baer_select(class="custom-select form-control")}}
+                                {{search_form.baer_select(class="custom-select form-control stadur_select")}}
                             </div>
                         </div>
                         <div class="col">
@@ -208,7 +208,7 @@
                                 <div class="input-group-prepend">
                                 {{search_form.sokn_select.label(class="input-group-text")}}
                                 </div>
-                                {{search_form.sokn_select(class="custom-select form-control")}}
+                                {{search_form.sokn_select(class="custom-select form-control stadur_select")}}
                             </div>
                         </div>
                         <div class="col">
@@ -216,7 +216,7 @@
                                 <div class="input-group-prepend">
                                 {{search_form.sysla_select.label(class="input-group-text")}}
                                 </div>
-                                {{search_form.sysla_select(class="custom-select form-control")}}
+                                {{search_form.sysla_select(class="custom-select form-control stadur_select")}}
                             </div>
                         </div>
                     </div>
@@ -379,7 +379,10 @@ $(document).ready(function() {
         var danarbu = button.data("danarbu");
         var nafn = button.data("nafn");
         var artal = button.data("artal");
-        $("#resultTitle").text(nafn + ", " + artal);
+        var baer = button.data("baer");
+        var sokn = button.data("sokn");
+        var sysla = button.data("sysla");
+        $("#resultTitle").text(nafn + ", " + artal + ", " + baer + ", " + sokn + ", " + sysla);
         $.ajax({
             url: "/faersla",
             data: {
@@ -419,12 +422,59 @@ $(document).ready(function() {
     $("#{{url_subpage}}Button").click();
     {% endif %}
 
-    $("#sysla_select").on("change", function (e) {
-        $("#sokn_select option:not(:first)").remove();
-        $("#baer_select option:not(:first)").remove();
-        $("#search_form").submit();
+
+    (function($, window) {
+    $.fn.replaceOptions = function(options) {
+        var self, $option;
+
+        this.empty();
+        self = this;
+
+        $.each(options, function(index, option) {
+        $option = $("<option></option>")
+            .attr("value", option.value)
+            .text(option.text);
+        self.append($option);
+        });
+    };
+    })(jQuery, window);
+
+    $(".stadur_select").on("change", function (e) {
+        var endpoint = e.currentTarget.id.split("_")[0];
+        var request = {
+            baer: $("#baer_select").val(),
+            sokn: $("#sokn_select").val(),
+            sysla: $("#sysla_select").val()
+        };
+        $.post({
+            contentType: "application/json",
+            url: "/update/" + endpoint,
+            data: JSON.stringify(request),
+            success: function (response) {
+                if ("syslur" in response) {
+                    $("#sysla_select").replaceOptions(response.syslur);
+                }
+                if ("soknir" in response) {
+                    $("#sokn_select").replaceOptions(response.soknir);
+                }
+                if ("baeir" in response) {
+                    $("#baer_select").replaceOptions(response.baeir);
+                }
+
+                if ("sysla_value" in response) {
+                    $("#sysla_select").val(response.sysla_value);
+                }
+                if ("sokn_value" in response) {
+                    $("#sokn_select").val(response.sokn_value);
+                }
+                if ("baer_value" in response) {
+                    $("#baer_select").val(response.baer_value);
+                }
+            }
+        });
     });
 
+    /*
     $("#sokn_select").on("change", function (e) {
         $("#baer_select option:not(:first)").remove();
         $("#search_form").submit();
@@ -438,7 +488,7 @@ $(document).ready(function() {
     $("#kyn_select").on("change", function (e) {
         $("#search_form").submit();
     });
-
+    */
 
     $(".needs-validation").each(function (i) {
         $(this).on("submit", function (e) {
@@ -455,7 +505,6 @@ $(document).ready(function() {
             if (form.checkValidity() === false) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log("Form error.");
             }
 
 
@@ -511,7 +560,10 @@ $(document).ready(function() {
     });
 
     $("#search_form_reset").on("click", function (e) {
-        $(".custom-select").val('').change();
+        $(".custom-select").val("").change();
+        // Overkill, but Brjann was having some issues where his form wasn't being
+        // cleared.
+        $("input.form-control").val("");
     });
 
 });
