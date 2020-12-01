@@ -563,7 +563,7 @@ $(document).ready(function() {
         $(".custom-select").val("").change();
         // Overkill, but Brjann was having some issues where his form wasn't being
         // cleared.
-        $("input.form-control").val("");
+        $("input.form-control").attr("value", "");
     });
 
 });
