@@ -13,4 +13,5 @@ docker run -d -p 7010:80 \
     --name=${app} \
     -e FLASK_APP=main.py \
     -e DANARBU_DBURI="" \
+    -e DANARBU_GA_ID="" \
     -v ${PWD}:/app ${app}

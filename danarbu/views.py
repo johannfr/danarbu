@@ -347,6 +347,7 @@ def render_nidurstodur(
         um_content=static_content(models.UmVefinn),
         itarefni_content=static_content(models.Itarefni),
         hjalp_content=static_content(models.Hjalp),
+        ga_id=app.config["GA_ID"],
     )
 
 
@@ -415,6 +416,7 @@ def root(request_hash=None):
                 "leitvilla.html",
                 search_form=search_form,
                 post_hash=new_hash,
+                ga_id=app.config["GA_ID"],
             )
     else:
         url_rule = str(request.url_rule).replace("/", "")
@@ -427,6 +429,7 @@ def root(request_hash=None):
             um_content=static_content(models.UmVefinn),
             itarefni_content=static_content(models.Itarefni),
             hjalp_content=static_content(models.Hjalp),
+            ga_id=app.config["GA_ID"],
         )
 
 
@@ -774,7 +777,11 @@ def myndir():
         return "Engar myndir tilheyra þessari færslu."
     else:
         return render_template(
-            "myndir.html", myndir=myndir, upphaf=open_index, heimild=heimild
+            "myndir.html",
+            myndir=myndir,
+            upphaf=open_index,
+            heimild=heimild,
+            ga_id=app.config["GA_ID"],
         )
 
 
