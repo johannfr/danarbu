@@ -14,6 +14,11 @@ from werkzeug.datastructures import ImmutableMultiDict
 from danarbu import app, db, models
 from danarbu.forms import SearchForm
 
+# FIXME: Workaround for missing https on manntal.is, thus breaking on mixed-content.
+# Remove this and other FIXME lines when manntal.is gets https
+import requests
+from flask import Response
+
 
 def is_relevant(field):
     if field.data != None and len(str(field.data)) > 0:
@@ -748,7 +753,11 @@ def faersla():
             .filter(models.Myndir.heimild == db_heimild.id)
             .order_by(models.Myndir.id)
         ):
-            heimild["myndir"].append(mynd)
+            # heimild["myndir"].append(mynd) # Put back in if manntal.is gets https
+            # FIXME Workaround, remove if manntal.is gets https:
+            mynd_workaround = {}
+            mynd_workaround["slod"] = mynd.slod.replace("http://", "/")
+            heimild["myndir"].append(mynd_workaround)
         heimildir.append(heimild)
 
     return render_template(
@@ -770,7 +779,7 @@ def myndir():
     ):
         myndir.append(
             {
-                "slod": mynd.slod,
+                "slod": mynd.slod.replace("http://", "/"),  # FIXME Workaround
             }
         )
     if len(myndir) == 0:
@@ -783,6 +792,25 @@ def myndir():
             heimild=heimild,
             ga_id=app.config["GA_ID"],
         )
+
+
+# FIXME Workaround: This entire route and method is a workaround, but it should be safe.
+@app.route(
+    "/manntal.is/myndir/geymsluskrar_stafraen_afrit/<stofnun>/<audkenni>/<filename>"
+)
+def mynda_proxy(stofnun, audkenni, filename):
+    # Those argument names are most definetely rubbish. I have no idea.
+    url = f"http://manntal.is/myndir/geymsluskrar_stafraen_afrit/{stofnun}/{audkenni}/{filename}"
+    image_request = requests.get(url, params=request.args)
+    if image_request.status_code == 200:
+        image_response = Response(
+            response=image_request.content, status=200, mimetype="image/jpeg"
+        )
+        image_response.headers[
+            "Content-Disposition"
+        ] = f'attachment; filename="{filename}"'
+        return image_response
+    return abort(image_request.status_code)
 
 
 @app.route("/stada")
